@@ -112,6 +112,8 @@ Next.js:
 NEXT_PUBLIC_API_BASE_URL=/backend/api
 API_PROXY_TARGET=http://localhost:8000
 NEXT_PUBLIC_RECAPTCHA_SITE_KEY=
+RESEND_API_KEY=
+RESEND_FROM="TaskFlow Planner <no-reply@mail.taskflow-planner.site>"
 NODEMAILER_HOST=smtp.gmail.com
 NODEMAILER_PORT=465
 NODEMAILER_SECURE=true
@@ -120,6 +122,10 @@ NODEMAILER_APP_PASSWORD=
 NODEMAILER_FROM_NAME="TaskFlow Planner"
 NODEMAILER_INTERNAL_KEY=
 ```
+
+The OTP endpoint uses the Resend HTTPS API when `RESEND_API_KEY` is set and
+falls back to Nodemailer SMTP otherwise. Railway Free, Trial, and Hobby plans
+must use the HTTPS option because outbound SMTP is unavailable.
 
 `/backend` is a same-origin Next.js proxy to Laravel. It keeps Sanctum session
 and CSRF cookies on the web host, including deployments where Railway assigns

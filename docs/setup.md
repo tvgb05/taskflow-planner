@@ -83,6 +83,8 @@ Set `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` in `apps/web/.env.local` to display Google 
 Configure the server-only mail variables in `apps/web/.env.local`:
 
 ```txt
+RESEND_API_KEY=
+RESEND_FROM="TaskFlow Planner <no-reply@mail.taskflow-planner.site>"
 NODEMAILER_HOST=smtp.gmail.com
 NODEMAILER_PORT=465
 NODEMAILER_SECURE=true
@@ -91,6 +93,10 @@ NODEMAILER_APP_PASSWORD=
 NODEMAILER_FROM_NAME="TaskFlow Planner"
 NODEMAILER_INTERNAL_KEY=
 ```
+
+When `RESEND_API_KEY` is present, OTP email uses Resend's HTTPS API. Otherwise
+it falls back to Nodemailer SMTP. Verify `mail.taskflow-planner.site` in Resend
+before using that sender.
 
 Use a Google App Password for `NODEMAILER_APP_PASSWORD`, not the account's regular password. `NODEMAILER_INTERNAL_KEY` must match the value in `apps/api/.env`.
 

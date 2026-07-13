@@ -119,6 +119,9 @@ NEXT_PUBLIC_API_BASE_URL=/backend/api
 API_PROXY_TARGET=https://api-taskflow-planner.up.railway.app
 NEXT_PUBLIC_RECAPTCHA_SITE_KEY=
 
+RESEND_API_KEY=<resend-api-key>
+RESEND_FROM=TaskFlow Planner <no-reply@mail.taskflow-planner.site>
+
 NODEMAILER_HOST=smtp.gmail.com
 NODEMAILER_PORT=465
 NODEMAILER_SECURE=true
@@ -127,6 +130,14 @@ NODEMAILER_APP_PASSWORD=<google-app-password>
 NODEMAILER_FROM_NAME=TaskFlow Planner
 NODEMAILER_INTERNAL_KEY=<shared-internal-key>
 ```
+
+For email on Railway Free, Trial, or Hobby, add `mail.taskflow-planner.site`
+as a sending domain in Resend. A subdomain does not need to be registered
+separately: copy every SPF, DKIM, and MX record supplied by Resend into the DNS
+provider for `taskflow-planner.site`, wait for the domain to become Verified,
+then create the API key above. If Cloudflare manages DNS, keep the email records
+DNS-only. The `NODEMAILER_*` SMTP variables are fallback settings for local
+development or Railway Pro and may be omitted when Resend is configured.
 
 Replace the sample `API_PROXY_TARGET` with the exact generated domain shown in
 the API service's Networking tab. Using

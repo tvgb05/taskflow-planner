@@ -43,3 +43,13 @@ API_PROXY_TARGET=https://api-taskflow-planner.up.railway.app
 cookies and CSRF protection.
 
 Replace the sample with the exact API domain from Railway Networking.
+
+For OTP email on Railway Free, Trial, or Hobby, configure the Resend HTTPS API:
+
+```txt
+RESEND_API_KEY=<resend-api-key>
+RESEND_FROM=TaskFlow Planner <no-reply@mail.taskflow-planner.site>
+```
+
+Verify `mail.taskflow-planner.site` in Resend first. Nodemailer remains the
+fallback for local development or Railway Pro.
