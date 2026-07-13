@@ -87,8 +87,9 @@ RECAPTCHA_SECRET_KEY=
 RECAPTCHA_REQUIRED=false
 ```
 
-Deploy the API, generate an HTTP public domain, apply the staged variable
-changes again if needed, and verify:
+Deploy the API and generate an HTTP public domain. In the domain settings, set
+the target port to `8080`, which is the port used by Railpack's Laravel server.
+Apply the staged variable changes again if needed, and verify:
 
 ```txt
 https://<api-domain>/up
@@ -143,11 +144,12 @@ Next.js includes public environment values in its production build.
 Check these in order:
 
 1. `https://<api-domain>/up` returns HTTP 200.
-2. `https://<web-domain>/backend/up` returns HTTP 200 through Next.js.
-3. `https://<web-domain>/backend/sanctum/csrf-cookie` returns 204 or 200 and sets `XSRF-TOKEN`.
-4. Registration sends OTP to the entered email.
-5. Login loads the dashboard without CORS or HTTP 419 errors.
-6. Project creation, AI suggestions, and schedule saving reach Laravel.
+2. `https://<web-domain>/backend` returns JSON with `status: ok`.
+3. `https://<web-domain>/backend/up` returns HTTP 200 through Next.js.
+4. `https://<web-domain>/backend/sanctum/csrf-cookie` returns 204 or 200 and sets `XSRF-TOKEN`.
+5. Registration sends OTP to the entered email.
+6. Login loads the dashboard without CORS or HTTP 419 errors.
+7. Project creation, AI suggestions, and schedule saving reach Laravel.
 
 If step 1 fails, inspect API Runtime Logs and database variables. If step 1
 passes but step 2 fails, inspect `API_PROXY_TARGET` and redeploy web. If login
