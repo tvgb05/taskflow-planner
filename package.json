@@ -1,0 +1,24 @@
+{
+  "name": "taskflow-planner",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n db,api,web,browser -c magenta,blue,cyan,green \"npm run dev:db\" \"npm run dev:api\" \"npm run dev:web\" \"npm run dev:open\"",
+    "dev:db": "node scripts/start-mysql.mjs",
+    "dev:api": "node scripts/php.mjs apps/api/artisan serve --host=127.0.0.1 --port=8000",
+    "dev:web": "npm --prefix apps/web run dev",
+    "dev:open": "node scripts/open-web.mjs",
+    "db:studio": "docker run --rm -p 8080:8080 -e ADMINER_DEFAULT_SERVER=host.docker.internal adminer:latest",
+    "doctor": "node scripts/doctor.mjs",
+    "api:composer": "node scripts/composer.mjs --working-dir=apps/api",
+    "api:set-gemini": "node scripts/set-gemini-key.mjs",
+    "api:migrate": "node scripts/php.mjs apps/api/artisan migrate",
+    "test": "cd apps/api && node ../../scripts/php.mjs artisan test",
+    "check": "npm run test && npm run lint && npm run build",
+    "lint": "npm --prefix apps/web run lint",
+    "build": "npm --prefix apps/web run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
