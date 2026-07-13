@@ -50,6 +50,18 @@ Laravel sends OTP payloads to a private Next.js route protected by `NODEMAILER_I
 
 For a public HTTPS deployment, use the frontend host in `SANCTUM_STATEFUL_DOMAINS`, configure a shared parent `SESSION_DOMAIN` for sibling subdomains, and set `SESSION_SECURE_COOKIE=true`.
 
+When web and API use separate Railway-provided domains, configure the Next.js
+same-origin proxy instead of sharing a cookie domain:
+
+```txt
+NEXT_PUBLIC_API_BASE_URL=/backend/api
+API_PROXY_TARGET=https://api-taskflow-planner.up.railway.app
+```
+
+The browser then requests `/backend/*` from the web domain and Next.js forwards
+the request to Laravel. Keep `SESSION_DOMAIN=null`; never use
+`.up.railway.app` as a cookie domain.
+
 Run migrations and serve the API:
 
 ```bash
@@ -154,7 +166,7 @@ Stop it with `Ctrl+C` in the terminal running `npm run db:studio`.
 
 ## Common issues
 
-- If frontend requests fail, confirm `NEXT_PUBLIC_API_BASE_URL` points to `http://localhost:8000/api`.
+- If frontend requests fail, confirm `NEXT_PUBLIC_API_BASE_URL=/backend/api` and `API_PROXY_TARGET` points to the Laravel origin without a trailing `/api`.
 - If CORS fails, confirm `FRONTEND_URL=http://localhost:3000` in Laravel `.env`.
 - If AI suggestions fail, set the key with `$env:GEMINI_API_KEY="your_key"; npm run api:set-gemini`, then restart `npm run dev`.
 - If the web app opens but API calls fail, run `npm run doctor` from the repository root.

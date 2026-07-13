@@ -1,7 +1,12 @@
 import type { User, ValidationErrors } from "@/lib/types";
 
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api";
+export const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api"
+).replace(/\/+$/, "");
+
+const API_ROOT_URL = API_BASE_URL.endsWith("/api")
+  ? API_BASE_URL.slice(0, -4)
+  : API_BASE_URL;
 
 type ApiOptions = Omit<RequestInit, "body"> & {
   body?: unknown;
@@ -33,8 +38,7 @@ function cookieValue(name: string) {
 }
 
 export async function initializeCsrf() {
-  const apiOrigin = new URL(API_BASE_URL).origin;
-  await fetch(`${apiOrigin}/sanctum/csrf-cookie`, {
+  await fetch(`${API_ROOT_URL}/sanctum/csrf-cookie`, {
     credentials: "include",
     headers: { Accept: "application/json" },
   });
@@ -60,13 +64,25 @@ export async function apiRequest<T>(
   });
 
   const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
+  let data: unknown = null;
+
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = null;
+    }
+  }
 
   if (!response.ok) {
+    const errorData = data as
+      | { message?: string; errors?: ValidationErrors }
+      | null;
+
     throw new ApiRequestError(
-      data?.message ?? "Something went wrong.",
+      errorData?.message ?? "Something went wrong.",
       response.status,
-      data?.errors,
+      errorData?.errors,
     );
   }
 

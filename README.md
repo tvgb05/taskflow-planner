@@ -109,7 +109,8 @@ Gemini is called only from Laravel. The AI breakdown prompt uses a concise plann
 Next.js:
 
 ```txt
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
+NEXT_PUBLIC_API_BASE_URL=/backend/api
+API_PROXY_TARGET=http://localhost:8000
 NEXT_PUBLIC_RECAPTCHA_SITE_KEY=
 NODEMAILER_HOST=smtp.gmail.com
 NODEMAILER_PORT=465
@@ -119,6 +120,13 @@ NODEMAILER_APP_PASSWORD=
 NODEMAILER_FROM_NAME="TaskFlow Planner"
 NODEMAILER_INTERNAL_KEY=
 ```
+
+`/backend` is a same-origin Next.js proxy to Laravel. It keeps Sanctum session
+and CSRF cookies on the web host, including deployments where Railway assigns
+separate generated domains to the web and API services.
+
+See [docs/railway-deployment.md](docs/railway-deployment.md) for the complete
+Railway service, environment variable, domain, and verification checklist.
 
 ## API overview
 
