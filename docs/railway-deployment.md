@@ -115,7 +115,7 @@ Add these web service variables:
 
 ```env
 NEXT_PUBLIC_API_BASE_URL=/backend/api
-API_PROXY_TARGET=https://${{api.RAILWAY_PUBLIC_DOMAIN}}
+API_PROXY_TARGET=https://api-taskflow-planner.up.railway.app
 NEXT_PUBLIC_RECAPTCHA_SITE_KEY=
 
 NODEMAILER_HOST=smtp.gmail.com
@@ -127,7 +127,12 @@ NODEMAILER_FROM_NAME=TaskFlow Planner
 NODEMAILER_INTERNAL_KEY=<shared-internal-key>
 ```
 
-`API_PROXY_TARGET` is an origin only. Do not append `/api` or a trailing slash.
+Replace the sample `API_PROXY_TARGET` with the exact generated domain shown in
+the API service's Networking tab. Using
+`https://${{api.RAILWAY_PUBLIC_DOMAIN}}` is also supported when the service is
+actually named `api` and already has a public domain, but enter the literal
+domain if Railway resolves that reference to an empty value. The target is an
+origin only; do not append `/api` or a trailing slash.
 `NODEMAILER_INTERNAL_KEY` must be identical in web and API.
 
 Redeploy the web service after changing either `NEXT_PUBLIC_*` variable because

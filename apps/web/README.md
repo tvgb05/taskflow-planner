@@ -35,9 +35,11 @@ Deploy this directory as the web service and configure:
 
 ```txt
 NEXT_PUBLIC_API_BASE_URL=/backend/api
-API_PROXY_TARGET=https://<railway-api-domain>
+API_PROXY_TARGET=https://api-taskflow-planner.up.railway.app
 ```
 
 `API_PROXY_TARGET` is the Laravel origin without `/api`. Requests under
 `/backend` are proxied by Next.js so the browser uses one origin for Sanctum
 cookies and CSRF protection.
+
+Replace the sample with the exact API domain from Railway Networking.
