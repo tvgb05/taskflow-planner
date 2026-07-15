@@ -32,6 +32,7 @@ const projectGuideTargets = [
   "[data-guide='project-actions']",
   "[data-guide='new-task']",
   "[data-guide='project-workspace']",
+  "[data-guide='task-completion']",
 ];
 
 const aiSuggestGuideTargets = [
@@ -80,10 +81,12 @@ type Rect = {
 export function GuideOverlay({
   open,
   onClose,
+  onComplete,
   steps,
 }: {
   open: boolean;
   onClose: () => void;
+  onComplete?: () => void;
   steps: GuideStep[];
 }) {
   const [index, setIndex] = useState(0);
@@ -240,7 +243,7 @@ export function GuideOverlay({
             className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-white bg-white px-4 text-sm font-semibold text-cyan-900 transition hover:bg-cyan-50"
             onClick={() => {
               if (isLast) {
-                onClose();
+                (onComplete ?? onClose)();
                 return;
               }
 

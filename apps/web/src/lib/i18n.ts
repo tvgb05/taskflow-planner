@@ -76,6 +76,30 @@ export const appText = {
       close: "Close guide",
       next: "Next",
       done: "Done",
+      welcome: {
+        title: "Wake up with a clear next step",
+        introduction:
+          "TaskFlow Planner began with a simple observation: many people wake up unsure what to do first, even though a realistic plan can give the whole day direction.",
+        morning: {
+          title: "Plan before the morning starts",
+          description:
+            "Before your usual morning routine, spend one minute sharing your goal, deadline, and available time.",
+        },
+        planning: {
+          title: "Turn goals into practical work",
+          description:
+            "The assistant drafts concrete tasks and smaller steps that fit the time you actually have.",
+        },
+        feedback: {
+          title: "Improve tomorrow with feedback",
+          description:
+            "Mark completed work and describe what helped or got in the way. Daily planning uses that feedback as its highest-priority context for the next plan.",
+        },
+        tourDescription:
+          "The short tour will show you how to create a project, add tasks, mark work Done, and give the assistant feedback for the next day.",
+        start: "Start the tour",
+        skip: "Explore on my own",
+      },
       dashboardSteps: [
         {
           title: "Create your first project",
@@ -166,6 +190,15 @@ export const appText = {
           description:
             "Filter tasks on the left and inspect the scheduled days on the right.",
         },
+        {
+          title: "Close the feedback loop",
+          description:
+            "Open a task to review its details, then use Done when the work is complete.",
+          details: [
+            "Completing work updates project progress on the dashboard.",
+            "Your completion pattern and written feedback help the next daily plan reflect what actually happened.",
+          ],
+        },
       ],
       aiSuggestSteps: [
         {
@@ -187,9 +220,13 @@ export const appText = {
           ],
         },
         {
-          title: "Choose a planning mode",
+          title: "Choose a planning mode and give feedback",
           description:
             "Use phases for a one-time project, weekly repetition for routines, or next-day planning when feedback should guide each day.",
+          details: [
+            "Next-day planning reveals a feedback field for what worked, what was difficult, and what should change tomorrow.",
+            "That feedback is treated as the highest-priority context for the next daily suggestion.",
+          ],
         },
         {
           title: "Control the amount of work",
@@ -444,6 +481,30 @@ export const appText = {
       close: "Đóng hướng dẫn",
       next: "Tiếp",
       done: "Hoàn tất",
+      welcome: {
+        title: "Thức dậy và biết rõ việc cần làm",
+        introduction:
+          "TaskFlow Planner bắt đầu từ một điều rất đời thường: nhiều người thức dậy nhưng không biết nên bắt đầu từ đâu, trong khi một kế hoạch hợp lý có thể tạo hướng đi rõ ràng cho cả ngày.",
+        morning: {
+          title: "Lập kế hoạch trước khi bắt đầu buổi sáng",
+          description:
+            "Trước khi vệ sinh cá nhân và bắt đầu công việc thường ngày, hãy dành một phút để ghi mục tiêu, hạn chót và thời gian bạn có.",
+        },
+        planning: {
+          title: "Biến mục tiêu thành việc có thể làm ngay",
+          description:
+            "Trợ lý sẽ phác thảo các nhiệm vụ cụ thể và chia thành những bước nhỏ phù hợp với quỹ thời gian thực tế.",
+        },
+        feedback: {
+          title: "Dùng phản hồi để cải thiện ngày mai",
+          description:
+            "Đánh dấu việc đã xong và ghi lại điều thuận lợi hoặc trở ngại. Khi lập kế hoạch từng ngày, trợ lý sẽ ưu tiên phản hồi đó cho kế hoạch kế tiếp.",
+        },
+        tourDescription:
+          "Hướng dẫn ngắn sau đây sẽ chỉ bạn cách tạo dự án, thêm nhiệm vụ, đánh dấu Xong và gửi phản hồi để trợ lý chuẩn bị kế hoạch ngày tiếp theo.",
+        start: "Bắt đầu hướng dẫn",
+        skip: "Tự khám phá",
+      },
       dashboardSteps: [
         {
           title: "Tạo dự án đầu tiên",
@@ -534,6 +595,15 @@ export const appText = {
           description:
             "Lọc nhiệm vụ bên trái và xem các ngày đã được lên lịch ở bên phải.",
         },
+        {
+          title: "Khép lại vòng phản hồi",
+          description:
+            "Mở một nhiệm vụ để xem chi tiết, sau đó dùng nút Xong khi công việc đã hoàn thành.",
+          details: [
+            "Việc đánh dấu hoàn tất sẽ cập nhật tiến độ dự án trên trang tổng quan.",
+            "Nhịp độ hoàn thành cùng phản hồi bạn nhập giúp kế hoạch ngày sau sát hơn với điều đã thực sự diễn ra.",
+          ],
+        },
       ],
       aiSuggestSteps: [
         {
@@ -555,9 +625,13 @@ export const appText = {
           ],
         },
         {
-          title: "Chọn cách lập kế hoạch",
+          title: "Chọn cách lập kế hoạch và gửi phản hồi",
           description:
             "Chọn theo giai đoạn cho dự án làm một lần, lặp theo tuần cho thói quen, hoặc từng ngày khi phản hồi mỗi ngày cần được ưu tiên.",
+          details: [
+            "Chế độ từng ngày sẽ hiện ô phản hồi để bạn ghi điều hiệu quả, điều khó khăn và việc cần thay đổi vào ngày mai.",
+            "Phản hồi này được ưu tiên cao nhất khi trợ lý tạo gợi ý cho ngày kế tiếp.",
+          ],
         },
         {
           title: "Giới hạn khối lượng công việc",

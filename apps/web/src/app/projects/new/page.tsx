@@ -23,7 +23,11 @@ import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { ApiRequestError, apiRequest, unwrapResource } from "@/lib/api";
-import { guideStorageKeys } from "@/lib/guide";
+import {
+  guideStorageKeys,
+  isOnboardingActive,
+  stopOnboarding,
+} from "@/lib/guide";
 import { useAppText } from "@/lib/i18n";
 import { usePreferences } from "@/lib/preferences";
 import type { Project, ValidationErrors } from "@/lib/types";
@@ -52,6 +56,14 @@ export default function NewProjectPage() {
   }, []);
 
   function closeGuide() {
+    localStorage.setItem(guideStorageKeys.newProjectSeen, "1");
+    if (isOnboardingActive()) {
+      stopOnboarding();
+    }
+    setGuideOpen(false);
+  }
+
+  function completeGuide() {
     localStorage.setItem(guideStorageKeys.newProjectSeen, "1");
     setGuideOpen(false);
   }
@@ -180,6 +192,7 @@ export default function NewProjectPage() {
           <GuideOverlay
             open={guideOpen}
             onClose={closeGuide}
+            onComplete={completeGuide}
             steps={getNewProjectGuideSteps(preferences.language)}
           />
         ) : null}

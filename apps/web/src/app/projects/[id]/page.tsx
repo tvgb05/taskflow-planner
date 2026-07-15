@@ -43,7 +43,11 @@ import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { ApiRequestError, apiRequest, unwrapResource } from "@/lib/api";
-import { guideStorageKeys } from "@/lib/guide";
+import {
+  guideStorageKeys,
+  isOnboardingActive,
+  stopOnboarding,
+} from "@/lib/guide";
 import { useAppText } from "@/lib/i18n";
 import { usePreferences } from "@/lib/preferences";
 import { formatDate, todayDateInputValue } from "@/lib/utils";
@@ -295,12 +299,40 @@ export default function ProjectDetailPage() {
   function closeGuide() {
     localStorage.setItem(guideStorageKeys.projectSeen, "1");
     localStorage.removeItem(guideStorageKeys.projectPendingId);
+    if (isOnboardingActive()) {
+      stopOnboarding();
+    }
     setProjectInfoExpanded(false);
     setGuideOpen(false);
   }
 
+  function completeProjectGuide() {
+    localStorage.setItem(guideStorageKeys.projectSeen, "1");
+    localStorage.removeItem(guideStorageKeys.projectPendingId);
+    setProjectInfoExpanded(false);
+    setGuideOpen(false);
+
+    if (isOnboardingActive()) {
+      setAiSettings((current) => ({
+        ...current,
+        planMode: "pipeline",
+      }));
+      setAiOpen(true);
+      setAiGuideOpen(true);
+    }
+  }
+
   function closeAiGuide() {
     localStorage.setItem(guideStorageKeys.aiSuggestSeen, "1");
+    if (isOnboardingActive()) {
+      stopOnboarding();
+    }
+    setAiGuideOpen(false);
+  }
+
+  function completeAiGuide() {
+    localStorage.setItem(guideStorageKeys.aiSuggestSeen, "1");
+    stopOnboarding();
     setAiGuideOpen(false);
   }
 
@@ -950,7 +982,10 @@ export default function ProjectDetailPage() {
               data-guide="project-workspace"
               className="grid gap-4 lg:grid-cols-[1fr_420px]"
             >
-              <div className="grid content-start gap-4">
+              <div
+                data-guide="task-completion"
+                className="grid content-start gap-4"
+              >
                 <Card>
                   <CardContent>
                     <div className="grid gap-3 md:grid-cols-3">
@@ -1435,6 +1470,7 @@ export default function ProjectDetailPage() {
           <GuideOverlay
             open={guideOpen}
             onClose={closeGuide}
+            onComplete={completeProjectGuide}
             steps={getProjectGuideSteps(preferences.language)}
           />
         ) : null}
@@ -1442,6 +1478,7 @@ export default function ProjectDetailPage() {
           <GuideOverlay
             open={aiGuideOpen}
             onClose={closeAiGuide}
+            onComplete={completeAiGuide}
             steps={getAiSuggestGuideSteps(preferences.language)}
           />
         ) : null}

@@ -11,6 +11,7 @@ import {
   Timer,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { AppShell, RequireAuth } from "@/components/taskflow/AppShell";
@@ -19,6 +20,7 @@ import {
   GuideOverlay,
 } from "@/components/taskflow/GuideOverlay";
 import { ProjectIcon } from "@/components/taskflow/ProjectIcon";
+import { WelcomeOnboardingModal } from "@/components/taskflow/WelcomeOnboardingModal";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -27,7 +29,11 @@ import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Modal } from "@/components/ui/Modal";
 import { apiRequest, unwrapCollection, unwrapResource } from "@/lib/api";
-import { guideStorageKeys } from "@/lib/guide";
+import {
+  guideStorageKeys,
+  isOnboardingActive,
+  stopOnboarding,
+} from "@/lib/guide";
 import { useAppText } from "@/lib/i18n";
 import { usePreferences } from "@/lib/preferences";
 import type { Project, Subtask, Task } from "@/lib/types";
@@ -61,12 +67,14 @@ const taskCompletionStyles = {
 };
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { preferences } = usePreferences();
   const t = useAppText();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [updatingTaskId, setUpdatingTaskId] = useState<number | null>(null);
 
@@ -78,6 +86,16 @@ export default function DashboardPage() {
   }, [t.dashboard.loadError]);
 
   useEffect(() => {
+    const welcomePending =
+      localStorage.getItem(guideStorageKeys.welcomePending) === "1";
+    const welcomeSeen =
+      localStorage.getItem(guideStorageKeys.welcomeSeen) === "1";
+
+    if (welcomePending && !welcomeSeen) {
+      setWelcomeOpen(true);
+      return;
+    }
+
     const pending = localStorage.getItem(guideStorageKeys.dashboardPending) === "1";
     const seen = localStorage.getItem(guideStorageKeys.dashboardSeen) === "1";
 
@@ -89,7 +107,34 @@ export default function DashboardPage() {
   function closeDashboardGuide() {
     localStorage.setItem(guideStorageKeys.dashboardSeen, "1");
     localStorage.removeItem(guideStorageKeys.dashboardPending);
+    if (isOnboardingActive()) {
+      stopOnboarding();
+    }
     setGuideOpen(false);
+  }
+
+  function completeDashboardGuide() {
+    localStorage.setItem(guideStorageKeys.dashboardSeen, "1");
+    localStorage.removeItem(guideStorageKeys.dashboardPending);
+    setGuideOpen(false);
+
+    if (isOnboardingActive()) {
+      router.push("/projects/new?guide=create-project&onboarding=1");
+    }
+  }
+
+  function startOnboarding() {
+    localStorage.setItem(guideStorageKeys.welcomeSeen, "1");
+    localStorage.removeItem(guideStorageKeys.welcomePending);
+    setWelcomeOpen(false);
+    setGuideOpen(true);
+  }
+
+  function skipOnboarding() {
+    localStorage.setItem(guideStorageKeys.welcomeSeen, "1");
+    localStorage.removeItem(guideStorageKeys.welcomePending);
+    stopOnboarding();
+    setWelcomeOpen(false);
   }
 
   const tasks = useMemo<DashboardTask[]>(
@@ -323,9 +368,15 @@ function replaceTask(nextTask: Task) {
           <GuideOverlay
             open={guideOpen}
             onClose={closeDashboardGuide}
+            onComplete={completeDashboardGuide}
             steps={getDashboardGuideSteps(preferences.language)}
           />
         ) : null}
+        <WelcomeOnboardingModal
+          open={welcomeOpen}
+          onStart={startOnboarding}
+          onSkip={skipOnboarding}
+        />
         <TaskDetailModal
           task={selectedTask}
           onClose={() => setSelectedTask(null)}
