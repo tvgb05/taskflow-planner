@@ -408,6 +408,7 @@ function SettingsMenu() {
                 onChange={(event) =>
                   updatePreferences({
                     language: event.target.value as AppLanguage,
+                    languageManuallySelected: true,
                   })
                 }
               >

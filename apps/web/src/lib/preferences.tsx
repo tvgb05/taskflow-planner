@@ -16,6 +16,7 @@ export type DateFormat = "dd/mm/yyyy" | "mm/dd/yyyy" | "yyyy-mm-dd";
 
 export type UserPreferences = {
   language: AppLanguage;
+  languageManuallySelected: boolean;
   dateFormat: DateFormat;
   learnFromTaskPatterns: boolean;
 };
@@ -30,6 +31,7 @@ const STORAGE_KEY = "taskflow_user_preferences";
 
 export const defaultPreferences: UserPreferences = {
   language: "en",
+  languageManuallySelected: false,
   dateFormat: "dd/mm/yyyy",
   learnFromTaskPatterns: true,
 };
@@ -43,6 +45,23 @@ const dateFormats = new Set<DateFormat>([
 
 const PreferencesContext = createContext<PreferencesContextValue | null>(null);
 
+function detectedBrowserLanguage(): AppLanguage {
+  if (typeof navigator === "undefined") {
+    return defaultPreferences.language;
+  }
+
+  const browserLanguage = navigator.languages?.[0] ?? navigator.language;
+
+  return browserLanguage?.toLowerCase().startsWith("vi") ? "vi" : "en";
+}
+
+function browserDefaultPreferences(): UserPreferences {
+  return {
+    ...defaultPreferences,
+    language: detectedBrowserLanguage(),
+  };
+}
+
 function readStoredPreferences(): UserPreferences {
   if (typeof window === "undefined") {
     return defaultPreferences;
@@ -52,16 +71,21 @@ function readStoredPreferences(): UserPreferences {
     const stored = window.localStorage.getItem(STORAGE_KEY);
 
     if (!stored) {
-      return defaultPreferences;
+      return browserDefaultPreferences();
     }
 
     const parsed = JSON.parse(stored) as Partial<UserPreferences>;
+    const languageManuallySelected =
+      parsed.languageManuallySelected === true;
 
     return {
       language:
-        parsed.language && languages.has(parsed.language)
+        languageManuallySelected &&
+        parsed.language &&
+        languages.has(parsed.language)
           ? parsed.language
-          : defaultPreferences.language,
+          : detectedBrowserLanguage(),
+      languageManuallySelected,
       dateFormat:
         parsed.dateFormat && dateFormats.has(parsed.dateFormat)
           ? parsed.dateFormat
@@ -72,7 +96,7 @@ function readStoredPreferences(): UserPreferences {
           : defaultPreferences.learnFromTaskPatterns,
     };
   } catch {
-    return defaultPreferences;
+    return browserDefaultPreferences();
   }
 }
 
@@ -106,7 +130,7 @@ export function PreferencesProvider({
   );
 
   const resetPreferences = useCallback(() => {
-    setPreferences(defaultPreferences);
+    setPreferences(browserDefaultPreferences());
   }, []);
 
   const value = useMemo(
