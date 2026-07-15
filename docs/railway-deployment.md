@@ -77,7 +77,7 @@ QUEUE_CONNECTION=database
 
 GEMINI_API_KEY=<gemini-key>
 GEMINI_MODEL=gemini-3.5-flash
-GEMINI_TIMEOUT=60
+GEMINI_TIMEOUT=90
 TASKFLOW_AI_PROFILE=portfolio_planner
 
 NODEMAILER_ENDPOINT=https://${{web.RAILWAY_PUBLIC_DOMAIN}}/api/internal/send-otp

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -50,29 +51,47 @@ class GeminiTaskBreakdownService
             ]);
         }
 
-        $response = Http::timeout((int) config('services.gemini.timeout', 30))->post(
-            "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}",
-            [
-                'systemInstruction' => [
-                    'parts' => [
-                        ['text' => $this->systemInstruction()],
-                    ],
-                ],
-                'contents' => [
+        $timeout = max(30, (int) config('services.gemini.timeout', 90));
+        $executionTimeout = $timeout + 15;
+        if (function_exists('ini_set')) {
+            @ini_set('max_execution_time', (string) $executionTimeout);
+        }
+        if (function_exists('set_time_limit')) {
+            @set_time_limit($executionTimeout);
+        }
+
+        try {
+            $response = Http::acceptJson()
+                ->connectTimeout(10)
+                ->timeout($timeout)
+                ->post(
+                    "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}",
                     [
-                        'role' => 'user',
-                        'parts' => [
-                            ['text' => $this->prompt($payload)],
+                        'systemInstruction' => [
+                            'parts' => [
+                                ['text' => $this->systemInstruction()],
+                            ],
+                        ],
+                        'contents' => [
+                            [
+                                'role' => 'user',
+                                'parts' => [
+                                    ['text' => $this->prompt($payload)],
+                                ],
+                            ],
+                        ],
+                        'generationConfig' => [
+                            'responseMimeType' => 'application/json',
+                            'temperature' => 0.2,
+                            'candidateCount' => 1,
                         ],
                     ],
-                ],
-                'generationConfig' => [
-                    'responseMimeType' => 'application/json',
-                    'temperature' => 0.2,
-                    'candidateCount' => 1,
-                ],
-            ],
-        );
+                );
+        } catch (ConnectionException $exception) {
+            report($exception);
+
+            throw new RuntimeException('Gemini could not be reached before the request timeout. Please try again.');
+        }
 
         if ($response->failed()) {
             $providerMessage = (string) data_get($response->json(), 'error.message', '');
