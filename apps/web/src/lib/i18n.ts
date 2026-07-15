@@ -170,13 +170,22 @@ export const appText = {
       ],
       projectSteps: [
         {
+          title: "Use the goal controls",
+          description:
+            "Restart this guide, return to all goals, or delete this goal from the top controls.",
+          details: [
+            "Delete always asks for confirmation and removes the goal, tasks, steps, and schedule.",
+            "Return to Goals when you want to compare or open another plan.",
+          ],
+        },
+        {
           title: "Confirm the goal details",
           description:
             "This is the goal contract: deadline and daily capacity shape every schedule.",
           details: [
+            "Choose an icon, goal type, and planning mode that match how the work repeats.",
             "Keep the description concrete because AI suggestions reuse it as context.",
-            "Mention target user, core screens, API/data needs, and demo-ready outcome.",
-            "Use a deadline you can demo against.",
+            "Save changes after updating the deadline or available minutes per day.",
           ],
         },
         {
@@ -184,27 +193,48 @@ export const appText = {
           description:
             "AI breakdown suggests work items, but you review them before saving.",
           details: [
-            "The key stays on Laravel.",
-            "Generated schedule is deterministic Laravel logic.",
+            "Choose response detail, task limits, and whether steps should be included.",
+            "Recurring goals can repeat weekly plans; daily pipeline goals prioritize your latest feedback.",
+            "Open the small help button here for the complete AI suggestion guide.",
           ],
         },
         {
-          title: "Add task details",
+          title: "Add a task manually",
           description:
-            "Tasks carry priority and deadline. Subtasks carry scheduled dates and done state.",
-        },
-        {
-          title: "Work from the plan",
-          description:
-            "Filter tasks on the left and inspect the scheduled days on the right.",
-        },
-        {
-          title: "Close the feedback loop",
-          description:
-            "Open a task to review its details, then use Done when the work is complete.",
+            "Use Add task when you already know a concrete result that belongs in this goal.",
           details: [
+            "The button opens a focused form for title, description, priority, effort, and deadline.",
+            "Task deadlines cannot be before today or after the goal deadline.",
+            "Manual tasks can teach the assistant your preferred format when learning is enabled in Settings.",
+          ],
+        },
+        {
+          title: "Filter the task list",
+          description:
+            "Narrow the list by status, priority, or latest acceptable deadline.",
+          details: [
+            "Clear a filter to include every value again.",
+            "Filters only change what you see; they do not change or delete tasks.",
+          ],
+        },
+        {
+          title: "Manage tasks and steps",
+          description:
+            "Open a task to edit its details, inspect resources, and manage the smaller steps inside it.",
+          details: [
+            "Add, edit, schedule, complete, reopen, or delete individual steps.",
+            "Use Done on the task when the full result is complete.",
             "Completing work updates goal progress on the dashboard.",
-            "Your completion pattern and written feedback help the next daily plan reflect what actually happened.",
+            "Completion patterns and written AI feedback improve future daily plans.",
+          ],
+        },
+        {
+          title: "Read the schedule",
+          description:
+            "Scheduled steps appear in this column grouped by day and checked against daily capacity.",
+          details: [
+            "Saving AI suggestions can refresh this schedule automatically.",
+            "Adjust a step's scheduled date inside its task when the plan changes.",
           ],
         },
       ],
@@ -327,6 +357,9 @@ export const appText = {
       maxSubtasks: "Max subtasks",
       scheduleAfterSaving: "Schedule after saving",
       newTask: "New task",
+      newTaskHint: "Add a task manually when you already know the next result to complete.",
+      newTaskDialogHint:
+        "Describe a concrete result, then set its priority, effort, and deadline inside this goal window.",
       minutes: "Minutes",
       addTask: "Add task",
       dueBefore: "Due before",
@@ -580,13 +613,22 @@ export const appText = {
       ],
       projectSteps: [
         {
+          title: "Dùng các nút điều khiển mục tiêu",
+          description:
+            "Mở lại hướng dẫn, quay về danh sách mục tiêu hoặc xóa mục tiêu bằng các nút phía trên.",
+          details: [
+            "Khi xóa, ứng dụng luôn yêu cầu xác nhận và sẽ xóa mục tiêu, nhiệm vụ, bước thực hiện cùng dữ liệu lịch.",
+            "Quay về Mục tiêu khi bạn muốn so sánh hoặc mở một kế hoạch khác.",
+          ],
+        },
+        {
           title: "Kiểm tra thông tin mục tiêu",
           description:
             "Hạn chót và thời lượng mỗi ngày trong phần này sẽ quyết định lịch làm.",
           details: [
+            "Chọn biểu tượng, loại mục tiêu và chế độ lập kế hoạch phù hợp với nhịp lặp của công việc.",
             "Viết mô tả cụ thể vì trợ lý sẽ dùng phần này để hiểu mục tiêu.",
-            "Nêu rõ người sử dụng, các màn hình chính, nhu cầu kết nối dữ liệu và kết quả có thể chạy thử.",
-            "Chọn hạn chót phù hợp với thời gian bạn có.",
+            "Nhớ lưu thay đổi sau khi chỉnh hạn chót hoặc số phút có thể làm mỗi ngày.",
           ],
         },
         {
@@ -594,27 +636,48 @@ export const appText = {
           description:
             "Trợ lý sẽ chia nhỏ công việc, nhưng bạn vẫn nên xem lại trước khi lưu.",
           details: [
-            "Thông tin kết nối của trợ lý được bảo vệ ở máy chủ.",
-            "Lịch làm được kiểm tra để không vượt quá thời gian của mục tiêu.",
+            "Chọn mức độ chi tiết, giới hạn số nhiệm vụ và có tạo các bước thực hiện hay không.",
+            "Mục tiêu lặp lại có thể dùng kế hoạch tuần; chế độ từng ngày sẽ ưu tiên phản hồi mới nhất của bạn.",
+            "Bấm nút hướng dẫn nhỏ trong khung này để xem đầy đủ quy trình tạo gợi ý.",
           ],
         },
         {
-          title: "Thêm chi tiết nhiệm vụ",
+          title: "Tự thêm một nhiệm vụ",
           description:
-            "Mỗi nhiệm vụ có độ ưu tiên và hạn chót. Các bước thực hiện có ngày làm và trạng thái hoàn tất.",
-        },
-        {
-          title: "Làm việc theo kế hoạch",
-          description:
-            "Lọc nhiệm vụ bên trái và xem các ngày đã được lên lịch ở bên phải.",
-        },
-        {
-          title: "Khép lại vòng phản hồi",
-          description:
-            "Mở một nhiệm vụ để xem chi tiết, sau đó dùng nút Xong khi công việc đã hoàn thành.",
+            "Dùng nút Thêm nhiệm vụ khi bạn đã biết một kết quả cụ thể cần đưa vào mục tiêu.",
           details: [
+            "Nút này mở biểu mẫu riêng cho tiêu đề, mô tả, độ ưu tiên, thời lượng và hạn chót.",
+            "Hạn nhiệm vụ không được trước hôm nay hoặc sau hạn chót của mục tiêu.",
+            "Nếu bật tính năng học trong Cài đặt, nhiệm vụ tự tạo sẽ giúp trợ lý học cách trình bày bạn mong muốn.",
+          ],
+        },
+        {
+          title: "Lọc danh sách nhiệm vụ",
+          description:
+            "Thu hẹp danh sách theo trạng thái, độ ưu tiên hoặc ngày hạn muộn nhất.",
+          details: [
+            "Xóa giá trị trong bộ lọc để hiện lại tất cả lựa chọn.",
+            "Bộ lọc chỉ thay đổi nội dung đang xem, không chỉnh sửa hoặc xóa nhiệm vụ.",
+          ],
+        },
+        {
+          title: "Quản lý nhiệm vụ và bước thực hiện",
+          description:
+            "Mở nhiệm vụ để chỉnh thông tin, xem tài liệu và quản lý các bước thực hiện bên trong.",
+          details: [
+            "Bạn có thể thêm, sửa, lên lịch, hoàn tất, mở lại hoặc xóa từng bước thực hiện.",
+            "Bấm Xong ở nhiệm vụ khi toàn bộ kết quả đã hoàn thành.",
             "Việc đánh dấu hoàn tất sẽ cập nhật tiến độ mục tiêu trên trang tổng quan.",
-            "Nhịp độ hoàn thành cùng phản hồi bạn nhập giúp kế hoạch ngày sau sát hơn với điều đã thực sự diễn ra.",
+            "Nhịp độ hoàn thành và phản hồi cho trợ lý sẽ cải thiện kế hoạch những ngày sau.",
+          ],
+        },
+        {
+          title: "Đọc lịch làm",
+          description:
+            "Các bước đã lên lịch xuất hiện trong cột này theo từng ngày và được kiểm tra với quỹ thời gian mỗi ngày.",
+          details: [
+            "Khi lưu gợi ý từ trợ lý, lịch có thể được làm mới tự động.",
+            "Nếu kế hoạch thay đổi, hãy chỉnh ngày làm của bước thực hiện ngay trong nhiệm vụ.",
           ],
         },
       ],
@@ -737,6 +800,9 @@ export const appText = {
       maxSubtasks: "Số bước tối đa",
       scheduleAfterSaving: "Tạo lịch sau khi lưu",
       newTask: "Nhiệm vụ mới",
+      newTaskHint: "Tự thêm nhiệm vụ khi bạn đã biết kết quả tiếp theo cần hoàn thành.",
+      newTaskDialogHint:
+        "Mô tả một kết quả cụ thể, sau đó đặt độ ưu tiên, thời lượng và hạn chót trong khoảng thời gian của mục tiêu.",
       minutes: "Số phút",
       addTask: "Thêm nhiệm vụ",
       dueBefore: "Hạn trước ngày",

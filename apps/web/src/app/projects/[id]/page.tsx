@@ -192,6 +192,7 @@ export default function ProjectDetailPage() {
   const [aiGuideOpen, setAiGuideOpen] = useState(false);
   const [guideChecked, setGuideChecked] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [taskCreateOpen, setTaskCreateOpen] = useState(false);
   const [taskSettingsExpanded, setTaskSettingsExpanded] = useState(false);
   const [subtaskSettingsExpanded, setSubtaskSettingsExpanded] = useState(false);
   const [repromptTarget, setRepromptTarget] = useState<RepromptTarget | null>(
@@ -398,6 +399,7 @@ export default function ProjectDetailPage() {
       });
       setTaskForm(emptyTaskForm);
       await loadProject();
+      setTaskCreateOpen(false);
     } catch (error) {
       handleApiError(error, t.project.createTaskError);
     } finally {
@@ -765,7 +767,7 @@ export default function ProjectDetailPage() {
         title={project?.name ?? t.project.fallbackTitle}
         description={project?.description ?? t.project.fallbackDescription}
         action={
-          <div className="flex flex-wrap gap-2">
+          <div data-guide="project-navigation" className="flex flex-wrap gap-2">
             <Button
               type="button"
               variant="secondary"
@@ -1157,78 +1159,27 @@ export default function ProjectDetailPage() {
 
                 <Card data-guide="new-task">
                   <CardContent>
-                    <h2 className="text-base font-semibold text-slate-950">
-                      {t.project.newTask}
-                    </h2>
-                    <form onSubmit={createTask} className="mt-4 grid gap-3">
-                      <Input
-                        label={t.common.title}
-                        value={taskForm.title}
-                        onChange={(event) =>
-                          setTaskForm((current) => ({
-                            ...current,
-                            title: event.target.value,
-                          }))
-                        }
-                        required
-                      />
-                      <Textarea
-                        label={t.project.description}
-                        value={taskForm.description}
-                        onChange={(event) =>
-                          setTaskForm((current) => ({
-                            ...current,
-                            description: event.target.value,
-                          }))
-                        }
-                      />
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <Select
-                          label={t.common.priority}
-                          value={taskForm.priority}
-                          onChange={(event) =>
-                            setTaskForm((current) => ({
-                              ...current,
-                              priority: event.target.value as TaskPriority,
-                            }))
-                          }
-                        >
-                          <option value="low">{t.priority.low}</option>
-                          <option value="medium">{t.priority.medium}</option>
-                          <option value="high">{t.priority.high}</option>
-                        </Select>
-                        <Input
-                          label={t.project.minutes}
-                          type="number"
-                          min={5}
-                          max={10080}
-                          value={taskForm.estimated_minutes}
-                          onChange={(event) =>
-                            setTaskForm((current) => ({
-                              ...current,
-                              estimated_minutes: event.target.value,
-                            }))
-                          }
-                        />
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h2 className="text-base font-semibold text-slate-950">
+                          {t.project.newTask}
+                        </h2>
+                        <p className="mt-1 text-sm leading-5 text-slate-500">
+                          {t.project.newTaskHint}
+                        </p>
                       </div>
-                      <Input
-                        label={t.project.deadline}
-                        type="date"
-                        min={todayDateInputValue()}
-                        max={project.deadline}
-                        value={taskForm.deadline}
-                        onChange={(event) =>
-                          setTaskForm((current) => ({
-                            ...current,
-                            deadline: event.target.value,
-                          }))
-                        }
-                      />
-                      <Button type="submit" disabled={busy}>
+                      <Button
+                        type="button"
+                        className="shrink-0"
+                        onClick={() => {
+                          clearFeedback();
+                          setTaskCreateOpen(true);
+                        }}
+                      >
                         <Plus className="h-4 w-4" />
                         {t.project.addTask}
                       </Button>
-                    </form>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -1236,13 +1187,13 @@ export default function ProjectDetailPage() {
 
             <section
               data-guide="project-workspace"
-              className="grid gap-4 lg:grid-cols-[1fr_420px]"
+              className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_360px]"
             >
               <div
                 data-guide="task-completion"
                 className="grid content-start gap-4"
               >
-                <Card>
+                <Card data-guide="task-filters">
                   <CardContent>
                     <div className="grid gap-3 md:grid-cols-3">
                       <Select
@@ -1290,28 +1241,30 @@ export default function ProjectDetailPage() {
                   </CardContent>
                 </Card>
 
-                {filteredTasks.length === 0 ? (
-                  <EmptyState
-                    title={t.project.noTasksMatch}
-                    description={t.project.noTasksDescription}
-                  />
-                ) : (
-                  filteredTasks.map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      projectDeadline={project.deadline}
-                      onTaskChange={updateTask}
-                      onDeleteTask={deleteTask}
-                      onCreateSubtask={createSubtask}
-                      onUpdateSubtask={updateSubtask}
-                      onDeleteSubtask={deleteSubtask}
+                <div data-guide="task-list" className="grid gap-4">
+                  {filteredTasks.length === 0 ? (
+                    <EmptyState
+                      title={t.project.noTasksMatch}
+                      description={t.project.noTasksDescription}
                     />
-                  ))
-                )}
+                  ) : (
+                    filteredTasks.map((task) => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        projectDeadline={project.deadline}
+                        onTaskChange={updateTask}
+                        onDeleteTask={deleteTask}
+                        onCreateSubtask={createSubtask}
+                        onUpdateSubtask={updateSubtask}
+                        onDeleteSubtask={deleteSubtask}
+                      />
+                    ))
+                  )}
+                </div>
               </div>
 
-              <div>
+              <div data-guide="schedule">
                 <h2 className="mb-3 text-base font-semibold text-slate-950">
                   {t.project.scheduleView}
                 </h2>
@@ -1323,6 +1276,100 @@ export default function ProjectDetailPage() {
             </section>
           </div>
         ) : null}
+
+        <Modal
+          open={taskCreateOpen}
+          title={t.project.newTask}
+          onClose={() => {
+            if (!busy) {
+              setTaskCreateOpen(false);
+            }
+          }}
+        >
+          <form onSubmit={createTask} className="grid gap-4">
+            <p className="text-sm leading-6 text-slate-600">
+              {t.project.newTaskDialogHint}
+            </p>
+            <ErrorMessage message={message} errors={errors} />
+            <Input
+              label={t.common.title}
+              value={taskForm.title}
+              onChange={(event) =>
+                setTaskForm((current) => ({
+                  ...current,
+                  title: event.target.value,
+                }))
+              }
+              required
+            />
+            <Textarea
+              label={t.project.description}
+              value={taskForm.description}
+              onChange={(event) =>
+                setTaskForm((current) => ({
+                  ...current,
+                  description: event.target.value,
+                }))
+              }
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Select
+                label={t.common.priority}
+                value={taskForm.priority}
+                onChange={(event) =>
+                  setTaskForm((current) => ({
+                    ...current,
+                    priority: event.target.value as TaskPriority,
+                  }))
+                }
+              >
+                <option value="low">{t.priority.low}</option>
+                <option value="medium">{t.priority.medium}</option>
+                <option value="high">{t.priority.high}</option>
+              </Select>
+              <Input
+                label={t.project.minutes}
+                type="number"
+                min={5}
+                max={10080}
+                value={taskForm.estimated_minutes}
+                onChange={(event) =>
+                  setTaskForm((current) => ({
+                    ...current,
+                    estimated_minutes: event.target.value,
+                  }))
+                }
+              />
+            </div>
+            <Input
+              label={t.project.deadline}
+              type="date"
+              min={todayDateInputValue()}
+              max={project?.deadline}
+              value={taskForm.deadline}
+              onChange={(event) =>
+                setTaskForm((current) => ({
+                  ...current,
+                  deadline: event.target.value,
+                }))
+              }
+            />
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setTaskCreateOpen(false)}
+                disabled={busy}
+              >
+                {t.common.cancel}
+              </Button>
+              <Button type="submit" disabled={busy || !taskForm.title.trim()}>
+                <Plus className="h-4 w-4" />
+                {t.project.addTask}
+              </Button>
+            </div>
+          </form>
+        </Modal>
 
         <Modal
           open={deleteConfirmOpen}

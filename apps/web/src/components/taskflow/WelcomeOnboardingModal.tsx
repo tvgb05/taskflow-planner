@@ -1,10 +1,11 @@
 "use client";
 
-import { BrainCircuit, CheckCircle2, Sunrise } from "lucide-react";
+import { BrainCircuit, CheckCircle2, Languages, Sunrise } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { useAppText } from "@/lib/i18n";
+import { usePreferences } from "@/lib/preferences";
 
 export function WelcomeOnboardingModal({
   open,
@@ -18,6 +19,7 @@ export function WelcomeOnboardingModal({
   busy?: boolean;
 }) {
   const t = useAppText();
+  const { preferences, updatePreferences } = usePreferences();
   const items = [
     { icon: Sunrise, ...t.guide.welcome.morning },
     { icon: BrainCircuit, ...t.guide.welcome.planning },
@@ -29,8 +31,25 @@ export function WelcomeOnboardingModal({
       open={open}
       title={t.guide.welcome.title}
       onClose={onSkip}
+      showCloseButton={false}
     >
       <div className="grid gap-6">
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() =>
+              updatePreferences({
+                language: preferences.language === "vi" ? "en" : "vi",
+                languageManuallySelected: true,
+              })
+            }
+          >
+            <Languages className="h-4 w-4" />
+            {preferences.language === "vi" ? "English" : "Tiếng Việt"}
+          </Button>
+        </div>
+
         <p className="max-w-2xl text-base leading-7 text-slate-700">
           {t.guide.welcome.introduction}
         </p>

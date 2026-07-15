@@ -28,11 +28,13 @@ const newProjectGuideTargets = [
 ];
 
 const projectGuideTargets = [
+  "[data-guide='project-navigation']",
   "[data-guide='project-info']",
   "[data-guide='project-actions']",
   "[data-guide='new-task']",
-  "[data-guide='project-workspace']",
-  "[data-guide='task-completion']",
+  "[data-guide='task-filters']",
+  "[data-guide='task-list']",
+  "[data-guide='schedule']",
 ];
 
 const aiSuggestGuideTargets = [
