@@ -482,14 +482,12 @@ class PlanningWorkflowTest extends TestCase
         $response->assertCreated()->assertJsonMissingPath('token');
         $this->getJson('/api/me')
             ->assertSuccessful()
-            ->assertJsonPath('data.email', 'public@example.com')
-            ->assertJsonPath('data.username', 'public');
+            ->assertJsonPath('data.email', 'public@example.com');
     }
 
-    public function test_a_user_can_login_with_email_but_not_username(): void
+    public function test_a_user_can_login_with_email(): void
     {
         $user = User::factory()->create([
-            'username' => 'morning_planner',
             'email' => 'planner@example.com',
             'password' => 'password123',
         ]);
@@ -503,29 +501,23 @@ class PlanningWorkflowTest extends TestCase
         $this->postJson('/api/logout')->assertOk();
 
         $this->postJson('/api/login', [
-            'email' => 'MORNING_PLANNER',
-            'password' => 'password123',
-        ])->assertUnprocessable()->assertJsonValidationErrors('email');
-
-        $this->postJson('/api/login', [
             'email' => 'PLANNER@EXAMPLE.COM',
             'password' => 'password123',
         ])->assertOk()->assertJsonPath('user.id', $user->id);
     }
 
-    public function test_a_user_cannot_change_to_an_existing_username(): void
+    public function test_a_user_cannot_change_to_an_existing_email(): void
     {
-        $user = User::factory()->create(['username' => 'first_user']);
-        User::factory()->create(['username' => 'taken_name']);
+        $user = User::factory()->create(['email' => 'first@example.com']);
+        User::factory()->create(['email' => 'taken@example.com']);
         Sanctum::actingAs($user);
 
         $this->putJson('/api/me', [
             'name' => $user->name,
-            'username' => 'taken_name',
-            'email' => $user->email,
-        ])->assertUnprocessable()->assertJsonValidationErrors('username');
+            'email' => 'taken@example.com',
+        ])->assertUnprocessable()->assertJsonValidationErrors('email');
 
-        $this->assertSame('first_user', $user->refresh()->username);
+        $this->assertSame('first@example.com', $user->refresh()->email);
     }
 
     public function test_registration_otp_is_sent_through_nodemailer(): void

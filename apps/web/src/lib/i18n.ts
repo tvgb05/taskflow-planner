@@ -394,8 +394,6 @@ export const appText = {
     auth: {
       loginSubtitle: "Sign in to your workspace.",
       email: "Email",
-      username: "Username",
-      usernameHint: "Use 3-30 lowercase letters, numbers, or underscores.",
       password: "Password",
       login: "Login",
       needAccount: "Need an account?",
@@ -806,8 +804,6 @@ export const appText = {
     auth: {
       loginSubtitle: "Đăng nhập vào khu vực làm việc của bạn.",
       email: "Email",
-      username: "Tên đăng nhập",
-      usernameHint: "Dùng 3-30 chữ thường, chữ số hoặc dấu gạch dưới.",
       password: "Mật khẩu",
       login: "Đăng nhập",
       needAccount: "Chưa có tài khoản?",

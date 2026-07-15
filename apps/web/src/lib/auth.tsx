@@ -25,7 +25,6 @@ type LoginInput = {
 
 type RegisterInput = {
   name: string;
-  username: string;
   email: string;
   password: string;
   password_confirmation: string;
@@ -34,7 +33,6 @@ type RegisterInput = {
 
 type ProfileInput = {
   name: string;
-  username: string;
   email: string;
 };
 
@@ -119,11 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       method: "PUT",
       body: input,
     });
-    const resourceUser = unwrapResource(payload.user);
-    const nextUser = {
-      ...resourceUser,
-      username: resourceUser.username || input.username,
-    };
+    const nextUser = unwrapResource(payload.user);
 
     setUser(nextUser);
 
