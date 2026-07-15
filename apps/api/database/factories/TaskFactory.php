@@ -16,6 +16,7 @@ class TaskFactory extends Factory
             'project_id' => Project::factory(),
             'title' => fake()->sentence(4),
             'description' => fake()->sentence(),
+            'source' => Task::SOURCE_MANUAL,
             'status' => 'todo',
             'priority' => 'medium',
             'deadline' => null,

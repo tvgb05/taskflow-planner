@@ -48,6 +48,10 @@ class AiBreakdownController extends Controller
 
         $this->rememberFeedback($request, $project, $payload);
         $payload['feedback_context'] = $this->feedbackContext($project);
+        $payload['project_type'] = $project->project_type;
+        $payload['task_pattern_context'] = ($payload['learn_from_user_tasks'] ?? true)
+            ? $this->taskPatternContext($request->user()->id)
+            : '';
 
         try {
             return response()->json($service->suggest($payload));
@@ -144,5 +148,32 @@ class AiBreakdownController extends Controller
                 return "- [{$feedback->for_date->toDateString()} | {$feedback->kind}{$target}] {$feedback->content}";
             })
             ->implode("\n");
+    }
+
+    private function taskPatternContext(int $userId): string
+    {
+        return Task::query()
+            ->where('source', Task::SOURCE_MANUAL)
+            ->whereHas('project', fn ($query) => $query->where('user_id', $userId))
+            ->with('subtasks')
+            ->latest()
+            ->limit(5)
+            ->get()
+            ->map(fn (Task $task): array => [
+                'title' => $task->title,
+                'description' => $task->description,
+                'priority' => $task->priority,
+                'estimated_minutes' => $task->estimated_minutes,
+                'subtasks' => $task->subtasks
+                    ->take(5)
+                    ->map(fn ($subtask): array => [
+                        'title' => $subtask->title,
+                        'description' => $subtask->description,
+                        'estimated_minutes' => $subtask->estimated_minutes,
+                    ])
+                    ->values()
+                    ->all(),
+            ])
+            ->toJson(JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 }

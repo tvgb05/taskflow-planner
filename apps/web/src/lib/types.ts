@@ -14,6 +14,7 @@ export type Project = {
   name: string;
   description: string | null;
   icon: string;
+  project_type: ProjectType;
   deadline: string;
   available_minutes_per_day: number;
   tasks_count: number;
@@ -23,6 +24,8 @@ export type Project = {
   created_at: string;
   updated_at: string;
 };
+
+export type ProjectType = "short_term" | "long_term" | "daily_recurring";
 
 export type TaskStatus = "todo" | "in_progress" | "done";
 export type TaskPriority = "low" | "medium" | "high";
@@ -34,6 +37,7 @@ export type Task = {
   title: string;
   description: string | null;
   phase: string | null;
+  source: "manual" | "ai";
   status: TaskStatus;
   priority: TaskPriority;
   deadline: string | null;

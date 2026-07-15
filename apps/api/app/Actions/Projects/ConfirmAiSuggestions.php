@@ -3,6 +3,7 @@
 namespace App\Actions\Projects;
 
 use App\Models\Project;
+use App\Models\Task;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -29,6 +30,7 @@ class ConfirmAiSuggestions
                         ...$taskData,
                         'title' => $repeatWeekly ? 'Week '.($cycle + 1).': '.$taskData['title'] : $taskData['title'],
                         'phase' => $repeatWeekly ? 'Week '.($cycle + 1).' - '.($taskData['phase'] ?? 'Weekly plan') : $taskData['phase'],
+                        'source' => Task::SOURCE_AI,
                         'status' => 'todo',
                         'deadline' => $deadline,
                     ]);

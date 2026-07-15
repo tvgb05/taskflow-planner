@@ -17,6 +17,7 @@ export type DateFormat = "dd/mm/yyyy" | "mm/dd/yyyy" | "yyyy-mm-dd";
 export type UserPreferences = {
   language: AppLanguage;
   dateFormat: DateFormat;
+  learnFromTaskPatterns: boolean;
 };
 
 type PreferencesContextValue = {
@@ -30,6 +31,7 @@ const STORAGE_KEY = "taskflow_user_preferences";
 export const defaultPreferences: UserPreferences = {
   language: "en",
   dateFormat: "dd/mm/yyyy",
+  learnFromTaskPatterns: true,
 };
 
 const languages = new Set<AppLanguage>(["en", "vi"]);
@@ -64,6 +66,10 @@ function readStoredPreferences(): UserPreferences {
         parsed.dateFormat && dateFormats.has(parsed.dateFormat)
           ? parsed.dateFormat
           : defaultPreferences.dateFormat,
+      learnFromTaskPatterns:
+        typeof parsed.learnFromTaskPatterns === "boolean"
+          ? parsed.learnFromTaskPatterns
+          : defaultPreferences.learnFromTaskPatterns,
     };
   } catch {
     return defaultPreferences;

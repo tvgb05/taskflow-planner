@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Project;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,6 +24,15 @@ class ProjectRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'project_type' => [
+                'sometimes',
+                'string',
+                Rule::in([
+                    Project::TYPE_SHORT_TERM,
+                    Project::TYPE_LONG_TERM,
+                    Project::TYPE_DAILY_RECURRING,
+                ]),
+            ],
             'icon' => [
                 'sometimes',
                 'string',

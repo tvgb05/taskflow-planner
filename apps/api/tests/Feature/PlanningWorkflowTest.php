@@ -65,6 +65,32 @@ class PlanningWorkflowTest extends TestCase
         $response->assertOk()->assertJsonPath('data.tasks.0.subtasks.0.title', 'Install dependencies');
         $this->assertDatabaseCount('tasks', 1);
         $this->assertDatabaseCount('subtasks', 1);
+        $this->assertDatabaseHas('tasks', [
+            'project_id' => $project->id,
+            'source' => Task::SOURCE_AI,
+        ]);
+    }
+
+    public function test_a_project_can_be_classified_when_it_is_created(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/projects', [
+            'name' => 'Build a sustainable study routine',
+            'description' => 'Plan study work across the semester.',
+            'icon' => 'book',
+            'project_type' => Project::TYPE_LONG_TERM,
+            'deadline' => today()->addMonth()->toDateString(),
+            'available_minutes_per_day' => 90,
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.project_type', Project::TYPE_LONG_TERM);
+        $this->assertDatabaseHas('projects', [
+            'user_id' => $user->id,
+            'project_type' => Project::TYPE_LONG_TERM,
+        ]);
     }
 
     public function test_invalid_ai_confirmation_does_not_partially_persist(): void
@@ -267,6 +293,89 @@ class PlanningWorkflowTest extends TestCase
                 && str_contains($prompt, 'Prefer steps with a clear verification command.')
                 && str_contains($prompt, 'Include the exact verification command and expected result.');
         });
+    }
+
+    public function test_ai_task_format_learning_uses_only_manual_tasks_and_can_be_disabled(): void
+    {
+        Carbon::setTestNow('2026-07-15 09:00:00');
+        config()->set('services.gemini.key', 'gemini-test-key');
+        config()->set('services.gemini.model', 'gemini-test-model');
+        $user = User::factory()->create();
+        $project = Project::factory()->for($user)->create([
+            'project_type' => Project::TYPE_LONG_TERM,
+            'deadline' => '2026-07-18',
+            'available_minutes_per_day' => 120,
+        ]);
+        $manualTask = Task::factory()->for($project)->create([
+            'title' => 'Manual pattern: outcome, method, and acceptance check',
+            'source' => Task::SOURCE_MANUAL,
+        ]);
+        Subtask::factory()->for($manualTask)->create([
+            'title' => 'Manual verification step',
+            'description' => 'Run a concrete check and record its result.',
+        ]);
+        Task::factory()->for($project)->create([
+            'title' => 'AI-generated task that must not become a style example',
+            'source' => Task::SOURCE_AI,
+        ]);
+        Sanctum::actingAs($user);
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([
+                'candidates' => [[
+                    'content' => [
+                        'parts' => [[
+                            'text' => json_encode(['tasks' => [[
+                                'title' => 'Create the first measurable milestone',
+                                'phase' => 'Milestone 1',
+                                'description' => 'Deliver and verify the first project milestone.',
+                                'deadline' => '2026-07-16',
+                                'estimated_minutes' => 45,
+                                'priority' => 'high',
+                                'subtasks' => [[
+                                    'title' => 'Complete the milestone output',
+                                    'description' => 'Produce the output and verify it against the stated acceptance check.',
+                                    'estimated_minutes' => 45,
+                                    'scheduled_date' => '2026-07-15',
+                                ]],
+                            ]]]),
+                        ]],
+                    ],
+                ]],
+            ]),
+        ]);
+
+        $basePayload = [
+            'goal' => 'Complete a long-term learning project',
+            'deadline' => '2026-07-18',
+            'available_minutes_per_day' => 120,
+            'language' => 'en',
+            'plan_mode' => 'phased',
+            'create_subtasks' => true,
+            'min_tasks' => 1,
+            'max_tasks' => 1,
+            'min_subtasks' => 1,
+            'max_subtasks' => 1,
+        ];
+
+        $this->postJson("/api/projects/{$project->id}/ai-breakdown", [
+            ...$basePayload,
+            'learn_from_user_tasks' => true,
+        ])->assertOk();
+        $this->postJson("/api/projects/{$project->id}/ai-breakdown", [
+            ...$basePayload,
+            'learn_from_user_tasks' => false,
+        ])->assertOk();
+
+        $recorded = Http::recorded();
+        $learningPrompt = (string) data_get($recorded[0][0]->data(), 'contents.0.parts.0.text');
+        $disabledPrompt = (string) data_get($recorded[1][0]->data(), 'contents.0.parts.0.text');
+
+        $this->assertStringContainsString('Project type: long_term.', $learningPrompt);
+        $this->assertStringContainsString($manualTask->title, $learningPrompt);
+        $this->assertStringContainsString('Manual verification step', $learningPrompt);
+        $this->assertStringNotContainsString('AI-generated task that must not become a style example', $learningPrompt);
+        $this->assertStringNotContainsString($manualTask->title, $disabledPrompt);
+        $this->assertStringContainsString('task-format learning is disabled', $disabledPrompt);
     }
 
     public function test_completing_a_task_completes_its_subtasks(): void

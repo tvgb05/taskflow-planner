@@ -23,11 +23,16 @@ class Task extends Model
 
     public const PRIORITY_HIGH = 'high';
 
+    public const SOURCE_MANUAL = 'manual';
+
+    public const SOURCE_AI = 'ai';
+
     protected $fillable = [
         'project_id',
         'title',
         'description',
         'phase',
+        'source',
         'status',
         'priority',
         'deadline',

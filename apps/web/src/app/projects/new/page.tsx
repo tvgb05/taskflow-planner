@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { ApiRequestError, apiRequest, unwrapResource } from "@/lib/api";
 import {
@@ -30,7 +31,7 @@ import {
 } from "@/lib/guide";
 import { useAppText } from "@/lib/i18n";
 import { usePreferences } from "@/lib/preferences";
-import type { Project, ValidationErrors } from "@/lib/types";
+import type { Project, ProjectType, ValidationErrors } from "@/lib/types";
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -38,6 +39,8 @@ export default function NewProjectPage() {
   const t = useAppText();
   const [name, setName] = useState("");
   const [icon, setIcon] = useState<ProjectIconKey>(defaultProjectIcon);
+  const [projectType, setProjectType] =
+    useState<ProjectType>("short_term");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
   const [availableMinutes, setAvailableMinutes] = useState("120");
@@ -81,6 +84,7 @@ export default function NewProjectPage() {
           name,
           description: description || null,
           icon,
+          project_type: projectType,
           deadline,
           available_minutes_per_day: Number(availableMinutes),
         },
@@ -147,6 +151,20 @@ export default function NewProjectPage() {
                 value={icon}
                 onChange={setIcon}
               />
+              <Select
+                label={t.project.projectType}
+                value={projectType}
+                onChange={(event) =>
+                  setProjectType(event.target.value as ProjectType)
+                }
+                required
+              >
+                <option value="short_term">{t.project.shortTerm}</option>
+                <option value="long_term">{t.project.longTerm}</option>
+                <option value="daily_recurring">
+                  {t.project.dailyRecurring}
+                </option>
+              </Select>
               <div data-guide="new-project-description">
                 <Textarea
                   label={t.newProject.descriptionLabel}

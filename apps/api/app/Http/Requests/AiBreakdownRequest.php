@@ -29,6 +29,7 @@ class AiBreakdownRequest extends FormRequest
             'plan_mode' => ['sometimes', 'string', 'in:phased,recurring,pipeline'],
             'recurrence_cycles' => ['sometimes', 'integer', 'min:1', 'max:12'],
             'feedback' => ['sometimes', 'nullable', 'string', 'max:2000'],
+            'learn_from_user_tasks' => ['sometimes', 'boolean'],
             'create_subtasks' => ['sometimes', 'boolean'],
             'min_tasks' => ['sometimes', 'integer', 'min:1', 'max:12'],
             'max_tasks' => ['sometimes', 'integer', 'min:1', 'max:12', 'gte:min_tasks'],

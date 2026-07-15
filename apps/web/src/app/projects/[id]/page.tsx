@@ -34,7 +34,7 @@ import { ScheduleList } from "@/components/taskflow/ScheduleList";
 import { TaskCard, type TaskUpdate } from "@/components/taskflow/TaskCard";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Input } from "@/components/ui/Input";
@@ -55,6 +55,7 @@ import type {
   AiSuggestedSubtask,
   AiSuggestion,
   Project,
+  ProjectType,
   ScheduleDay,
   ScheduleSubtask,
   Subtask,
@@ -73,6 +74,7 @@ type ScheduleResponse = {
 type ProjectForm = {
   name: string;
   icon: string;
+  project_type: ProjectType;
   description: string;
   deadline: string;
   available_minutes_per_day: string;
@@ -162,6 +164,7 @@ export default function ProjectDetailPage() {
   const [projectForm, setProjectForm] = useState<ProjectForm>({
     name: "",
     icon: defaultProjectIcon,
+    project_type: "short_term",
     description: "",
     deadline: "",
     available_minutes_per_day: "120",
@@ -190,7 +193,8 @@ export default function ProjectDetailPage() {
   const [aiGuideOpen, setAiGuideOpen] = useState(false);
   const [guideChecked, setGuideChecked] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [projectInfoExpanded, setProjectInfoExpanded] = useState(false);
+  const [taskSettingsExpanded, setTaskSettingsExpanded] = useState(false);
+  const [subtaskSettingsExpanded, setSubtaskSettingsExpanded] = useState(false);
   const [repromptTarget, setRepromptTarget] = useState<RepromptTarget | null>(
     null,
   );
@@ -207,6 +211,7 @@ export default function ProjectDetailPage() {
     setProjectForm({
       name: nextProject.name,
       icon: normalizedProjectIcon(nextProject.icon),
+      project_type: nextProject.project_type,
       description: nextProject.description ?? "",
       deadline: nextProject.deadline,
       available_minutes_per_day: String(nextProject.available_minutes_per_day),
@@ -232,6 +237,7 @@ export default function ProjectDetailPage() {
         setProjectForm({
           name: nextProject.name,
           icon: normalizedProjectIcon(nextProject.icon),
+          project_type: nextProject.project_type,
           description: nextProject.description ?? "",
           deadline: nextProject.deadline,
           available_minutes_per_day: String(
@@ -243,6 +249,13 @@ export default function ProjectDetailPage() {
             ? `${nextProject.name}: ${nextProject.description}`
             : nextProject.name,
         );
+        setAiSettings((current) => ({
+          ...current,
+          planMode:
+            nextProject.project_type === "daily_recurring"
+              ? "recurring"
+              : "phased",
+        }));
       })
       .catch(() => {
         if (active) {
@@ -270,7 +283,6 @@ export default function ProjectDetailPage() {
     const requested = searchParams.get("guide") === "first-project";
 
     if (!seen && (requested || pendingProjectId === String(project.id))) {
-      setProjectInfoExpanded(true);
       setGuideOpen(true);
     }
 
@@ -309,14 +321,12 @@ export default function ProjectDetailPage() {
     if (isOnboardingActive()) {
       stopOnboarding();
     }
-    setProjectInfoExpanded(false);
     setGuideOpen(false);
   }
 
   function completeProjectGuide() {
     localStorage.setItem(guideStorageKeys.projectSeen, "1");
     localStorage.removeItem(guideStorageKeys.projectPendingId);
-    setProjectInfoExpanded(false);
     setGuideOpen(false);
 
     if (isOnboardingActive()) {
@@ -361,6 +371,7 @@ export default function ProjectDetailPage() {
             name: projectForm.name,
             description: projectForm.description || null,
             icon: projectForm.icon,
+            project_type: projectForm.project_type,
             deadline: projectForm.deadline,
             available_minutes_per_day: Number(
               projectForm.available_minutes_per_day,
@@ -369,7 +380,6 @@ export default function ProjectDetailPage() {
         },
       );
       setProject(unwrapResource(payload));
-      setProjectInfoExpanded(false);
     } catch (error) {
       handleApiError(error, t.project.updateProjectError);
     } finally {
@@ -554,6 +564,7 @@ export default function ProjectDetailPage() {
             plan_mode: aiSettings.planMode,
             recurrence_cycles: boundedAiCount(aiSettings.recurrenceCycles, 4),
             feedback: aiSettings.feedback.trim() || null,
+            learn_from_user_tasks: preferences.learnFromTaskPatterns,
             create_subtasks: aiSettings.createSubtasks,
             min_tasks: minTasks,
             max_tasks: maxTasks,
@@ -673,6 +684,7 @@ export default function ProjectDetailPage() {
             plan_mode: aiSettings.planMode,
             recurrence_cycles: boundedAiCount(aiSettings.recurrenceCycles, 4),
             feedback: aiSettings.feedback.trim() || null,
+            learn_from_user_tasks: preferences.learnFromTaskPatterns,
             create_subtasks:
               repromptTarget.type === "subtask" || aiSettings.createSubtasks,
             min_tasks: 1,
@@ -788,7 +800,6 @@ export default function ProjectDetailPage() {
               type="button"
               variant="secondary"
               onClick={() => {
-                setProjectInfoExpanded(true);
                 setGuideOpen(true);
               }}
             >
@@ -822,37 +833,20 @@ export default function ProjectDetailPage() {
           <div className="grid gap-6">
             <section className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
               <Card data-guide="project-info">
-                <CardHeader className={projectInfoExpanded ? "p-0" : "border-b-0 p-0"}>
-                  <button
-                    type="button"
-                    className="flex w-full items-start gap-3 px-5 py-4 text-left hover:bg-slate-50"
-                    onClick={() => setProjectInfoExpanded((current) => !current)}
-                    aria-expanded={projectInfoExpanded}
-                  >
+                <CardContent>
+                  <div className="mb-4 flex items-center gap-3">
                     <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-cyan-50 text-cyan-700">
                       <ProjectIcon icon={project.icon} />
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-slate-950">
+                    <div>
+                      <h2 className="text-base font-semibold text-slate-950">
                         {t.project.projectInformation}
-                      </span>
-                      <span className="mt-1 block line-clamp-2 text-sm leading-5 text-slate-600">
-                        {project.description || t.common.noDescription}
-                      </span>
-                      <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-slate-500">
-                        <span>{t.project.deadline}: {formatDate(project.deadline, preferences.dateFormat)}</span>
-                        <span>{project.available_minutes_per_day} {t.common.minPerDay}</span>
-                      </span>
-                    </span>
-                    {projectInfoExpanded ? (
-                      <ChevronUp className="mt-1 h-5 w-5 shrink-0 text-slate-500" />
-                    ) : (
-                      <ChevronDown className="mt-1 h-5 w-5 shrink-0 text-slate-500" />
-                    )}
-                  </button>
-                </CardHeader>
-                {projectInfoExpanded ? (
-                  <CardContent>
+                      </h2>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {t.project.projectInformationHint}
+                      </p>
+                    </div>
+                  </div>
                   <form onSubmit={saveProject} className="grid gap-4">
                     <Input
                       label={t.project.name}
@@ -875,6 +869,23 @@ export default function ProjectDetailPage() {
                         }))
                       }
                     />
+                    <Select
+                      label={t.project.projectType}
+                      value={projectForm.project_type}
+                      onChange={(event) =>
+                        setProjectForm((current) => ({
+                          ...current,
+                          project_type: event.target.value as ProjectType,
+                        }))
+                      }
+                      required
+                    >
+                      <option value="short_term">{t.project.shortTerm}</option>
+                      <option value="long_term">{t.project.longTerm}</option>
+                      <option value="daily_recurring">
+                        {t.project.dailyRecurring}
+                      </option>
+                    </Select>
                     <Textarea
                       label={t.project.description}
                       value={projectForm.description}
@@ -919,8 +930,7 @@ export default function ProjectDetailPage() {
                       {t.common.saveChanges}
                     </Button>
                   </form>
-                  </CardContent>
-                ) : null}
+                </CardContent>
               </Card>
 
               <div className="grid gap-4">
@@ -1268,11 +1278,34 @@ export default function ProjectDetailPage() {
                 </div>
               ) : null}
               </div>
-              <div data-guide="ai-work-limits" className="grid gap-3">
-                <p className="text-sm font-semibold text-slate-800">
-                  {t.project.taskSettings}
-                </p>
-                <div className="grid gap-3 sm:grid-cols-2">
+              <div
+                data-guide="ai-work-limits"
+                className="grid gap-3 border-t border-slate-200 pt-3"
+              >
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between gap-3 text-left"
+                  onClick={() =>
+                    setTaskSettingsExpanded((current) => !current)
+                  }
+                  aria-expanded={taskSettingsExpanded}
+                >
+                  <span>
+                    <span className="block text-sm font-semibold text-slate-800">
+                      {t.project.taskSettings}
+                    </span>
+                    <span className="mt-1 block text-xs text-slate-500">
+                      {aiSettings.minTasks}-{aiSettings.maxTasks} {t.project.tasks}
+                    </span>
+                  </span>
+                  {taskSettingsExpanded ? (
+                    <ChevronUp className="h-5 w-5 text-slate-500" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-slate-500" />
+                  )}
+                </button>
+                {taskSettingsExpanded ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
                   <Input
                     label={t.project.minTasks}
                     type="number"
@@ -1299,71 +1332,99 @@ export default function ProjectDetailPage() {
                       }))
                     }
                   />
-                </div>
+                  </div>
+                ) : null}
               </div>
               <div className="grid gap-3 border-t border-slate-200 pt-3">
-                <p className="text-sm font-semibold text-slate-800">
-                  {t.project.subtaskSettings}
-                </p>
-              <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500"
-                  checked={aiSettings.createSubtasks}
-                  onChange={(event) =>
-                    setAiSettings((current) => ({
-                      ...current,
-                      createSubtasks: event.target.checked,
-                    }))
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between gap-3 text-left"
+                  onClick={() =>
+                    setSubtaskSettingsExpanded((current) => !current)
                   }
-                />
-                {t.project.createSubtasksOnSave}
-              </label>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Input
-                  label={t.project.minSubtasks}
-                  type="number"
-                  min={1}
-                  max={12}
-                  value={aiSettings.minSubtasks}
-                  disabled={!aiSettings.createSubtasks}
-                  onChange={(event) =>
-                    setAiSettings((current) => ({
-                      ...current,
-                      minSubtasks: event.target.value,
-                    }))
-                  }
-                />
-                <Input
-                  label={t.project.maxSubtasks}
-                  type="number"
-                  min={1}
-                  max={12}
-                  value={aiSettings.maxSubtasks}
-                  disabled={!aiSettings.createSubtasks}
-                  onChange={(event) =>
-                    setAiSettings((current) => ({
-                      ...current,
-                      maxSubtasks: event.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500 disabled:opacity-50"
-                  checked={aiSettings.autoSchedule && aiSettings.createSubtasks}
-                  disabled={!aiSettings.createSubtasks}
-                  onChange={(event) =>
-                    setAiSettings((current) => ({
-                      ...current,
-                      autoSchedule: event.target.checked,
-                    }))
-                  }
-                />
-                {t.project.scheduleAfterSaving}
-              </label>
+                  aria-expanded={subtaskSettingsExpanded}
+                >
+                  <span>
+                    <span className="block text-sm font-semibold text-slate-800">
+                      {t.project.subtaskSettings}
+                    </span>
+                    <span className="mt-1 block text-xs text-slate-500">
+                      {aiSettings.createSubtasks
+                        ? `${aiSettings.minSubtasks}-${aiSettings.maxSubtasks} ${t.project.subtasks}`
+                        : t.project.subtasksDisabled}
+                    </span>
+                  </span>
+                  {subtaskSettingsExpanded ? (
+                    <ChevronUp className="h-5 w-5 text-slate-500" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-slate-500" />
+                  )}
+                </button>
+                {subtaskSettingsExpanded ? (
+                  <div className="grid gap-3">
+                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500"
+                        checked={aiSettings.createSubtasks}
+                        onChange={(event) =>
+                          setAiSettings((current) => ({
+                            ...current,
+                            createSubtasks: event.target.checked,
+                          }))
+                        }
+                      />
+                      {t.project.createSubtasksOnSave}
+                    </label>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Input
+                        label={t.project.minSubtasks}
+                        type="number"
+                        min={1}
+                        max={12}
+                        value={aiSettings.minSubtasks}
+                        disabled={!aiSettings.createSubtasks}
+                        onChange={(event) =>
+                          setAiSettings((current) => ({
+                            ...current,
+                            minSubtasks: event.target.value,
+                          }))
+                        }
+                      />
+                      <Input
+                        label={t.project.maxSubtasks}
+                        type="number"
+                        min={1}
+                        max={12}
+                        value={aiSettings.maxSubtasks}
+                        disabled={!aiSettings.createSubtasks}
+                        onChange={(event) =>
+                          setAiSettings((current) => ({
+                            ...current,
+                            maxSubtasks: event.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500 disabled:opacity-50"
+                        checked={
+                          aiSettings.autoSchedule && aiSettings.createSubtasks
+                        }
+                        disabled={!aiSettings.createSubtasks}
+                        onChange={(event) =>
+                          setAiSettings((current) => ({
+                            ...current,
+                            autoSchedule: event.target.checked,
+                          }))
+                        }
+                      />
+                      {t.project.scheduleAfterSaving}
+                    </label>
+                  </div>
+                ) : null}
               </div>
             </div>
             <div data-guide="ai-generate" className="w-fit">

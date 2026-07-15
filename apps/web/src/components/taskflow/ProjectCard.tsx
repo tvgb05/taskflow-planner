@@ -12,6 +12,11 @@ import { formatDate } from "@/lib/utils";
 export function ProjectCard({ project }: { project: Project }) {
   const { preferences } = usePreferences();
   const t = useAppText();
+  const projectTypeLabel = {
+    short_term: t.project.shortTerm,
+    long_term: t.project.longTerm,
+    daily_recurring: t.project.dailyRecurring,
+  }[project.project_type];
 
   return (
     <Card className="h-full transition hover:border-cyan-300 hover:shadow-sm">
@@ -22,9 +27,12 @@ export function ProjectCard({ project }: { project: Project }) {
               <ProjectIcon icon={project.icon} />
             </div>
             <div className="min-w-0">
-              <h3 className="text-base font-semibold text-slate-950">
-                {project.name}
-              </h3>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-base font-semibold text-slate-950">
+                  {project.name}
+                </h3>
+                <Badge tone="neutral">{projectTypeLabel}</Badge>
+              </div>
               <p className="mt-1 line-clamp-2 text-sm text-slate-500">
                 {project.description || t.common.noDescription}
               </p>

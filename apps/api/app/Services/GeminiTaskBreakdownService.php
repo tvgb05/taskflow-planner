@@ -262,6 +262,14 @@ class GeminiTaskBreakdownService
             default => 'Create a phased plan across the full available window. Each task must be a distinct phase with its own earlier deadline; do not assign every task to the final project date.',
         };
         $feedback = trim((string) ($payload['feedback_context'] ?? '')) ?: 'No user feedback has been recorded yet.';
+        $taskPattern = trim((string) ($payload['task_pattern_context'] ?? ''))
+            ?: 'No user-created task examples are available or task-format learning is disabled.';
+        $projectType = $payload['project_type'] ?? 'short_term';
+        $projectTypeInstruction = match ($projectType) {
+            'long_term' => 'This is a long-term project. Organize tasks into meaningful stages with intermediate deadlines and sustainable pacing across the full project window.',
+            'daily_recurring' => 'This is a daily recurring project. Prefer repeatable daily actions or a reusable routine, with practical variation and recovery where relevant.',
+            default => 'This is a short-term project. Keep the plan focused, immediately actionable, and achievable within a compact delivery window.',
+        };
         $repromptInstruction = '';
 
         if (isset($payload['current_task'], $payload['current_subtask'], $payload['reprompt_feedback'])) {
@@ -318,8 +326,11 @@ Language for all user-facing task and subtask text: {$language}
 Planning profile: {$profile}
 Style: {$style}
 Plan mode: {$planMode}. {$modeInstruction}
+Project type: {$projectType}. {$projectTypeInstruction}
 Remembered project feedback (high-priority preferences; when entries conflict, follow the newer entry):
 {$feedback}
+User-created task format examples (imitate only their structure, wording style, and detail level; never copy unrelated project facts):
+{$taskPattern}
 Task count: return at least {$minTasks} and at most {$maxTasks} tasks.
 Subtask rule: {$subtaskInstruction}
 {$repromptInstruction}

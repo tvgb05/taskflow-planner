@@ -69,10 +69,13 @@ Project body:
   "name": "Portfolio sprint",
   "description": "Build TaskFlow Planner",
   "icon": "code",
+  "project_type": "short_term",
   "deadline": "2026-07-15",
   "available_minutes_per_day": 120
 }
 ```
+
+`project_type` accepts `short_term`, `long_term`, or `daily_recurring`. The AI prompt uses this classification to choose compact execution, phased milestones, or repeatable daily routines.
 
 ## Tasks
 
@@ -145,11 +148,14 @@ Request:
   "goal": "Build a fullstack portfolio project using Next.js and Laravel",
   "deadline": "2026-07-15",
   "available_minutes_per_day": 120,
-  "plan_mode": "phased"
+  "plan_mode": "phased",
+  "learn_from_user_tasks": true
 }
 ```
 
 `plan_mode` can be `phased` (deadline-based milestones), `recurring` (a detailed weekly template repeated when saved), or `pipeline` (only the next day). Optional `feedback` and regeneration feedback are stored as project-specific AI memory. The ten most recent entries are included in future prompts, with newer entries taking precedence when preferences conflict.
+
+When `learn_from_user_tasks` is enabled, the prompt includes up to five recent manually created tasks from the same user as format examples. AI-generated tasks are excluded, and the examples are used only for structure, wording style, and detail level.
 
 To regenerate one draft task, send that task as `current_task` with `reprompt_feedback`. To regenerate only one draft subtask, also send it as `current_subtask`. The response contains one task; for subtask regeneration, that task contains exactly one replacement subtask.
 

@@ -11,11 +11,18 @@ class Project extends Model
 {
     use HasFactory;
 
+    public const TYPE_SHORT_TERM = 'short_term';
+
+    public const TYPE_LONG_TERM = 'long_term';
+
+    public const TYPE_DAILY_RECURRING = 'daily_recurring';
+
     protected $fillable = [
         'user_id',
         'name',
         'description',
         'icon',
+        'project_type',
         'deadline',
         'available_minutes_per_day',
     ];
