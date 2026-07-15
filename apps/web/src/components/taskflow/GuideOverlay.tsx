@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getAppText, useAppText } from "@/lib/i18n";
 import type { AppLanguage } from "@/lib/preferences";
@@ -91,6 +91,8 @@ export function GuideOverlay({
 }) {
   const [index, setIndex] = useState(0);
   const [rect, setRect] = useState<Rect | null>(null);
+  const [tooltipHeight, setTooltipHeight] = useState(260);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const step = steps[index];
   const t = useAppText();
 
@@ -105,7 +107,17 @@ export function GuideOverlay({
     const viewportHeight =
       typeof window === "undefined" ? 720 : window.innerHeight;
     const width = Math.min(320, viewportWidth - 32);
-    const estimatedHeight = 260;
+    const estimatedHeight = tooltipHeight;
+    const isMobile = viewportWidth < 640;
+
+    if (isMobile) {
+      const top = rect.top + rect.height / 2 < viewportHeight / 2
+        ? Math.max(16, viewportHeight - estimatedHeight - 16)
+        : 16;
+
+      return { top, left: 16, width };
+    }
+
     const fitsRight = rect.left + rect.width + gap + width < viewportWidth;
     const fitsLeft = rect.left - gap - width > 0;
     if (fitsRight || fitsLeft) {
@@ -125,7 +137,24 @@ export function GuideOverlay({
     const left = Math.max(16, Math.min(rect.left, viewportWidth - width - 16));
 
     return { top, left, width };
-  }, [rect]);
+  }, [rect, tooltipHeight]);
+
+  useEffect(() => {
+    if (!open || !tooltipRef.current) {
+      return;
+    }
+
+    const tooltip = tooltipRef.current;
+    const measureTooltip = () => {
+      setTooltipHeight(tooltip.getBoundingClientRect().height);
+    };
+    const observer = new ResizeObserver(measureTooltip);
+
+    measureTooltip();
+    observer.observe(tooltip);
+
+    return () => observer.disconnect();
+  }, [index, open]);
 
   useEffect(() => {
     if (!open || !step) {
@@ -189,6 +218,7 @@ export function GuideOverlay({
       ) : null}
 
       <div
+        ref={tooltipRef}
         className={cn(
           "pointer-events-auto absolute rounded-md bg-cyan-700 p-4 text-white shadow-xl ring-1 ring-cyan-500/40",
           "max-w-[calc(100vw-32px)]",
