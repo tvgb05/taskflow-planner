@@ -23,6 +23,7 @@ class Project extends Model
         'description',
         'icon',
         'project_type',
+        'planning_mode',
         'deadline',
         'available_minutes_per_day',
     ];

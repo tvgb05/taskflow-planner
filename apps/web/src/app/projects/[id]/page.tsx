@@ -30,10 +30,11 @@ import {
   ProjectIcon,
   ProjectIconPicker,
 } from "@/components/taskflow/ProjectIcon";
+import { ResourceLinks } from "@/components/taskflow/ResourceLinks";
 import { ScheduleList } from "@/components/taskflow/ScheduleList";
 import { TaskCard, type TaskUpdate } from "@/components/taskflow/TaskCard";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Button, iconOnlyButtonStyles } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
@@ -50,10 +51,11 @@ import {
 } from "@/lib/guide";
 import { useAppText } from "@/lib/i18n";
 import { usePreferences } from "@/lib/preferences";
-import { formatDate, todayDateInputValue } from "@/lib/utils";
+import { cn, formatDate, todayDateInputValue } from "@/lib/utils";
 import type {
   AiSuggestedSubtask,
   AiSuggestion,
+  PlanningMode,
   Project,
   ProjectType,
   ScheduleDay,
@@ -75,6 +77,7 @@ type ProjectForm = {
   name: string;
   icon: string;
   project_type: ProjectType;
+  planning_mode: PlanningMode;
   description: string;
   deadline: string;
   available_minutes_per_day: string;
@@ -90,9 +93,7 @@ type TaskForm = {
 };
 
 type AiSettings = {
-  planningProfile: "portfolio" | "study" | "work" | "personal";
   aiStyle: "concise" | "detailed" | "coach";
-  planMode: "phased" | "recurring" | "pipeline";
   recurrenceCycles: string;
   feedback: string;
   createSubtasks: boolean;
@@ -117,9 +118,7 @@ const emptyTaskForm: TaskForm = {
 };
 
 const defaultAiSettings: AiSettings = {
-  planningProfile: "portfolio",
   aiStyle: "detailed",
-  planMode: "phased",
   recurrenceCycles: "4",
   feedback: "",
   createSubtasks: true,
@@ -165,6 +164,7 @@ export default function ProjectDetailPage() {
     name: "",
     icon: defaultProjectIcon,
     project_type: "short_term",
+    planning_mode: "phased",
     description: "",
     deadline: "",
     available_minutes_per_day: "120",
@@ -184,7 +184,6 @@ export default function ProjectDetailPage() {
   const [errors, setErrors] = useState<ValidationErrors | undefined>();
 
   const [aiOpen, setAiOpen] = useState(false);
-  const [aiGoal, setAiGoal] = useState("");
   const [aiSuggestions, setAiSuggestions] = useState<AiSuggestion[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiMessage, setAiMessage] = useState<string | null>(null);
@@ -212,15 +211,11 @@ export default function ProjectDetailPage() {
       name: nextProject.name,
       icon: normalizedProjectIcon(nextProject.icon),
       project_type: nextProject.project_type,
+      planning_mode: nextProject.planning_mode,
       description: nextProject.description ?? "",
       deadline: nextProject.deadline,
       available_minutes_per_day: String(nextProject.available_minutes_per_day),
     });
-    setAiGoal(
-      nextProject.description
-        ? `${nextProject.name}: ${nextProject.description}`
-        : nextProject.name,
-    );
   }, [projectId]);
 
   useEffect(() => {
@@ -238,24 +233,13 @@ export default function ProjectDetailPage() {
           name: nextProject.name,
           icon: normalizedProjectIcon(nextProject.icon),
           project_type: nextProject.project_type,
+          planning_mode: nextProject.planning_mode,
           description: nextProject.description ?? "",
           deadline: nextProject.deadline,
           available_minutes_per_day: String(
             nextProject.available_minutes_per_day,
           ),
         });
-        setAiGoal(
-          nextProject.description
-            ? `${nextProject.name}: ${nextProject.description}`
-            : nextProject.name,
-        );
-        setAiSettings((current) => ({
-          ...current,
-          planMode:
-            nextProject.project_type === "daily_recurring"
-              ? "recurring"
-              : "phased",
-        }));
       })
       .catch(() => {
         if (active) {
@@ -289,17 +273,6 @@ export default function ProjectDetailPage() {
     setGuideChecked(true);
   }, [guideChecked, project, searchParams]);
 
-  useEffect(() => {
-    if (!aiOpen) {
-      return;
-    }
-
-    const seen = localStorage.getItem(guideStorageKeys.aiSuggestSeen) === "1";
-    if (!seen) {
-      setAiGuideOpen(true);
-    }
-  }, [aiOpen]);
-
   function clearFeedback() {
     setMessage(null);
     setErrors(undefined);
@@ -330,11 +303,6 @@ export default function ProjectDetailPage() {
     setGuideOpen(false);
 
     if (isOnboardingActive()) {
-      setAiSettings((current) => ({
-        ...current,
-        planMode: "pipeline",
-      }));
-      setAiOpen(true);
       setAiGuideOpen(true);
     }
   }
@@ -372,6 +340,7 @@ export default function ProjectDetailPage() {
             description: projectForm.description || null,
             icon: projectForm.icon,
             project_type: projectForm.project_type,
+            planning_mode: projectForm.planning_mode,
             deadline: projectForm.deadline,
             available_minutes_per_day: Number(
               projectForm.available_minutes_per_day,
@@ -539,7 +508,7 @@ export default function ProjectDetailPage() {
 
   async function requestAiBreakdown(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!project || !aiGoal.trim()) {
+    if (!project) {
       return;
     }
 
@@ -555,13 +524,12 @@ export default function ProjectDetailPage() {
         {
           method: "POST",
           body: {
-            goal: aiGoal.trim(),
+            goal: project.description?.trim() || project.name,
             deadline: project.deadline,
             available_minutes_per_day: project.available_minutes_per_day,
             language: preferences.language,
-            planning_profile: aiSettings.planningProfile,
             ai_style: aiSettings.aiStyle,
-            plan_mode: aiSettings.planMode,
+            plan_mode: project.planning_mode,
             recurrence_cycles: boundedAiCount(aiSettings.recurrenceCycles, 4),
             feedback: aiSettings.feedback.trim() || null,
             learn_from_user_tasks: preferences.learnFromTaskPatterns,
@@ -574,6 +542,7 @@ export default function ProjectDetailPage() {
         },
       );
       setAiSuggestions(payload.tasks);
+      setAiOpen(true);
     } catch (error) {
       if (error instanceof ApiRequestError) {
         setAiMessage(error.message);
@@ -604,16 +573,18 @@ export default function ProjectDetailPage() {
               title: suggestion.title,
               phase: suggestion.phase,
               description: suggestion.description,
+              resources: suggestion.resources,
               priority: suggestion.priority,
               deadline: suggestion.deadline,
               estimated_minutes: suggestion.estimated_minutes,
               repeat_weekly: suggestion.repeat_weekly,
               subtasks: aiSettings.createSubtasks
                 ? suggestion.subtasks.map((subtask) => ({
-                title: subtask.title,
-                description: subtask.description,
-                estimated_minutes: subtask.estimated_minutes,
-                scheduled_date: subtask.scheduled_date,
+                    title: subtask.title,
+                    description: subtask.description,
+                    resources: subtask.resources,
+                    estimated_minutes: subtask.estimated_minutes,
+                    scheduled_date: subtask.scheduled_date,
                   }))
                 : [],
             })),
@@ -675,13 +646,12 @@ export default function ProjectDetailPage() {
         {
           method: "POST",
           body: {
-            goal: aiGoal.trim(),
+            goal: project.description?.trim() || project.name,
             deadline: project.deadline,
             available_minutes_per_day: project.available_minutes_per_day,
             language: preferences.language,
-            planning_profile: aiSettings.planningProfile,
             ai_style: aiSettings.aiStyle,
-            plan_mode: aiSettings.planMode,
+            plan_mode: project.planning_mode,
             recurrence_cycles: boundedAiCount(aiSettings.recurrenceCycles, 4),
             feedback: aiSettings.feedback.trim() || null,
             learn_from_user_tasks: preferences.learnFromTaskPatterns,
@@ -886,10 +856,28 @@ export default function ProjectDetailPage() {
                         {t.project.dailyRecurring}
                       </option>
                     </Select>
+                    <Select
+                      label={t.project.planMode}
+                      value={projectForm.planning_mode}
+                      onChange={(event) =>
+                        setProjectForm((current) => ({
+                          ...current,
+                          planning_mode: event.target.value as PlanningMode,
+                        }))
+                      }
+                      required
+                    >
+                      <option value="phased">{t.project.phasedPlan}</option>
+                      <option value="recurring">
+                        {t.project.recurringPlan}
+                      </option>
+                      <option value="pipeline">{t.project.pipelinePlan}</option>
+                    </Select>
                     <Textarea
                       label={t.project.description}
                       value={projectForm.description}
                       placeholder={t.newProject.descriptionPlaceholder}
+                      rows={8}
                       onChange={(event) =>
                         setProjectForm((current) => ({
                           ...current,
@@ -897,6 +885,9 @@ export default function ProjectDetailPage() {
                         }))
                       }
                     />
+                    <p className="text-xs leading-5 text-slate-500">
+                      {t.newProject.descriptionHint}
+                    </p>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <Input
                         label={t.project.deadline}
@@ -935,7 +926,11 @@ export default function ProjectDetailPage() {
 
               <div className="grid gap-4">
                 <Card data-guide="project-actions">
-                  <CardContent className="grid gap-3">
+                  <CardContent>
+                    <form
+                      onSubmit={requestAiBreakdown}
+                      className="grid gap-4"
+                    >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <h2 className="text-base font-semibold text-slate-950">
@@ -945,19 +940,218 @@ export default function ProjectDetailPage() {
                           {t.project.aiCallout}
                         </p>
                       </div>
-                      <Badge tone="info">
-                        {project.available_minutes_per_day} {t.common.minPerDay}
-                      </Badge>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className={cn(iconOnlyButtonStyles, "h-9 w-9")}
+                        onClick={() => setAiGuideOpen(true)}
+                        aria-label={t.common.guide}
+                        title={t.common.guide}
+                      >
+                        <CircleHelp className="h-4 w-4" />
+                      </Button>
                     </div>
+                    <ErrorMessage message={aiMessage} />
+                    <div data-guide="ai-style">
+                      <Select
+                        label={t.project.aiStyle}
+                        value={aiSettings.aiStyle}
+                        onChange={(event) =>
+                          setAiSettings((current) => ({
+                            ...current,
+                            aiStyle: event.target.value as AiSettings["aiStyle"],
+                          }))
+                        }
+                      >
+                        <option value="concise">{t.project.concise}</option>
+                        <option value="detailed">{t.project.detailed}</option>
+                        <option value="coach">{t.project.coach}</option>
+                      </Select>
+                    </div>
+                    {project.planning_mode === "recurring" ? (
+                      <Input
+                        label={t.project.recurrenceCycles}
+                        type="number"
+                        min={1}
+                        max={12}
+                        value={aiSettings.recurrenceCycles}
+                        onChange={(event) =>
+                          setAiSettings((current) => ({
+                            ...current,
+                            recurrenceCycles: event.target.value,
+                          }))
+                        }
+                      />
+                    ) : null}
+                    {project.planning_mode === "pipeline" ? (
+                      <Textarea
+                        label={t.project.feedback}
+                        value={aiSettings.feedback}
+                        onChange={(event) =>
+                          setAiSettings((current) => ({
+                            ...current,
+                            feedback: event.target.value,
+                          }))
+                        }
+                      />
+                    ) : null}
+                    <div
+                      data-guide="ai-work-limits"
+                      className="grid gap-3 border-t border-slate-200 pt-3"
+                    >
+                      <button
+                        type="button"
+                        className="flex w-full items-center justify-between gap-3 text-left"
+                        onClick={() =>
+                          setTaskSettingsExpanded((current) => !current)
+                        }
+                        aria-expanded={taskSettingsExpanded}
+                      >
+                        <span>
+                          <span className="block text-sm font-semibold text-slate-800">
+                            {t.project.taskSettings}
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            {aiSettings.minTasks}-{aiSettings.maxTasks} {t.project.tasks}
+                          </span>
+                        </span>
+                        {taskSettingsExpanded ? (
+                          <ChevronUp className="h-5 w-5 text-slate-500" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-slate-500" />
+                        )}
+                      </button>
+                      {taskSettingsExpanded ? (
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                          <Input
+                            label={t.project.minTasks}
+                            type="number"
+                            min={1}
+                            max={12}
+                            value={aiSettings.minTasks}
+                            onChange={(event) =>
+                              setAiSettings((current) => ({
+                                ...current,
+                                minTasks: event.target.value,
+                              }))
+                            }
+                          />
+                          <Input
+                            label={t.project.maxTasks}
+                            type="number"
+                            min={1}
+                            max={12}
+                            value={aiSettings.maxTasks}
+                            onChange={(event) =>
+                              setAiSettings((current) => ({
+                                ...current,
+                                maxTasks: event.target.value,
+                              }))
+                            }
+                          />
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="grid gap-3 border-t border-slate-200 pt-3">
+                      <button
+                        type="button"
+                        className="flex w-full items-center justify-between gap-3 text-left"
+                        onClick={() =>
+                          setSubtaskSettingsExpanded((current) => !current)
+                        }
+                        aria-expanded={subtaskSettingsExpanded}
+                      >
+                        <span>
+                          <span className="block text-sm font-semibold text-slate-800">
+                            {t.project.subtaskSettings}
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            {aiSettings.createSubtasks
+                              ? `${aiSettings.minSubtasks}-${aiSettings.maxSubtasks} ${t.project.subtasks}`
+                              : t.project.subtasksDisabled}
+                          </span>
+                        </span>
+                        {subtaskSettingsExpanded ? (
+                          <ChevronUp className="h-5 w-5 text-slate-500" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-slate-500" />
+                        )}
+                      </button>
+                      {subtaskSettingsExpanded ? (
+                        <div className="grid gap-3">
+                          <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500"
+                              checked={aiSettings.createSubtasks}
+                              onChange={(event) =>
+                                setAiSettings((current) => ({
+                                  ...current,
+                                  createSubtasks: event.target.checked,
+                                }))
+                              }
+                            />
+                            {t.project.createSubtasksOnSave}
+                          </label>
+                          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                            <Input
+                              label={t.project.minSubtasks}
+                              type="number"
+                              min={1}
+                              max={12}
+                              value={aiSettings.minSubtasks}
+                              disabled={!aiSettings.createSubtasks}
+                              onChange={(event) =>
+                                setAiSettings((current) => ({
+                                  ...current,
+                                  minSubtasks: event.target.value,
+                                }))
+                              }
+                            />
+                            <Input
+                              label={t.project.maxSubtasks}
+                              type="number"
+                              min={1}
+                              max={12}
+                              value={aiSettings.maxSubtasks}
+                              disabled={!aiSettings.createSubtasks}
+                              onChange={(event) =>
+                                setAiSettings((current) => ({
+                                  ...current,
+                                  maxSubtasks: event.target.value,
+                                }))
+                              }
+                            />
+                          </div>
+                          <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500"
+                              checked={aiSettings.autoSchedule}
+                              onChange={(event) =>
+                                setAiSettings((current) => ({
+                                  ...current,
+                                  autoSchedule: event.target.checked,
+                                }))
+                              }
+                            />
+                            {t.project.scheduleAfterSaving}
+                          </label>
+                        </div>
+                      ) : null}
+                    </div>
+                    <div data-guide="ai-generate">
                     <Button
-                      type="button"
+                      type="submit"
                       variant="accent"
                       className="h-12 w-full"
-                      onClick={() => setAiOpen(true)}
+                      disabled={aiLoading}
                     >
                       <Sparkles className="h-4 w-4" />
-                      {t.project.aiBreakdown}
+                      {t.project.generateSuggestions}
                     </Button>
+                    </div>
+                    </form>
                   </CardContent>
                 </Card>
 
@@ -1162,7 +1356,7 @@ export default function ProjectDetailPage() {
 
         <Modal
           open={aiOpen}
-          title={t.project.aiBreakdown}
+          title={t.project.aiPlan}
           onClose={() => {
             setAiGuideOpen(false);
             setRepromptTarget(null);
@@ -1170,273 +1364,10 @@ export default function ProjectDetailPage() {
             setAiOpen(false);
           }}
         >
-          <form onSubmit={requestAiBreakdown} className="grid gap-4">
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                variant="secondary"
-                className="h-9"
-                onClick={() => setAiGuideOpen(true)}
-              >
-                <CircleHelp className="h-4 w-4" />
-                {t.common.guide}
-              </Button>
-            </div>
-            <ErrorMessage message={aiMessage} />
-            <div data-guide="ai-goal">
-              <Textarea
-                label={t.project.goal}
-                value={aiGoal}
-                onChange={(event) => setAiGoal(event.target.value)}
-                required
-              />
-            </div>
-            <div className="grid gap-3 rounded-md border border-slate-200 bg-slate-50 p-3">
-              <h3 className="text-sm font-semibold text-slate-950">
-                {t.project.aiSettings}
-              </h3>
-              <div
-                data-guide="ai-profile-style"
-                className="grid gap-3 sm:grid-cols-2"
-              >
-                <Select
-                  label={t.project.planningProfile}
-                  value={aiSettings.planningProfile}
-                  onChange={(event) =>
-                    setAiSettings((current) => ({
-                      ...current,
-                      planningProfile: event.target
-                        .value as AiSettings["planningProfile"],
-                    }))
-                  }
-                >
-                  <option value="portfolio">{t.project.portfolio}</option>
-                  <option value="study">{t.project.study}</option>
-                  <option value="work">{t.project.work}</option>
-                  <option value="personal">{t.project.personal}</option>
-                </Select>
-                <Select
-                  label={t.project.aiStyle}
-                  value={aiSettings.aiStyle}
-                  onChange={(event) =>
-                    setAiSettings((current) => ({
-                      ...current,
-                      aiStyle: event.target.value as AiSettings["aiStyle"],
-                    }))
-                  }
-                >
-                  <option value="concise">{t.project.concise}</option>
-                  <option value="detailed">{t.project.detailed}</option>
-                  <option value="coach">{t.project.coach}</option>
-                </Select>
-              </div>
-              <div data-guide="ai-plan-mode" className="grid gap-3">
-                <Select
-                  label={t.project.planMode}
-                  value={aiSettings.planMode}
-                  onChange={(event) =>
-                    setAiSettings((current) => ({
-                      ...current,
-                      planMode: event.target.value as AiSettings["planMode"],
-                    }))
-                  }
-                >
-                  <option value="phased">{t.project.phasedPlan}</option>
-                  <option value="recurring">{t.project.recurringPlan}</option>
-                  <option value="pipeline">{t.project.pipelinePlan}</option>
-                </Select>
-              {aiSettings.planMode === "recurring" ? (
-                <Input
-                  label={t.project.recurrenceCycles}
-                  type="number"
-                  min={1}
-                  max={12}
-                  value={aiSettings.recurrenceCycles}
-                  onChange={(event) =>
-                    setAiSettings((current) => ({
-                      ...current,
-                      recurrenceCycles: event.target.value,
-                    }))
-                  }
-                />
-              ) : null}
-              {aiSettings.planMode === "pipeline" ? (
-                <div className="grid gap-1">
-                  <Textarea
-                    label={t.project.feedback}
-                    value={aiSettings.feedback}
-                    onChange={(event) =>
-                      setAiSettings((current) => ({
-                        ...current,
-                        feedback: event.target.value,
-                      }))
-                    }
-                  />
-                  <p className="text-xs leading-5 text-slate-500">
-                    {t.project.feedbackHint}
-                  </p>
-                </div>
-              ) : null}
-              </div>
-              <div
-                data-guide="ai-work-limits"
-                className="grid gap-3 border-t border-slate-200 pt-3"
-              >
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-between gap-3 text-left"
-                  onClick={() =>
-                    setTaskSettingsExpanded((current) => !current)
-                  }
-                  aria-expanded={taskSettingsExpanded}
-                >
-                  <span>
-                    <span className="block text-sm font-semibold text-slate-800">
-                      {t.project.taskSettings}
-                    </span>
-                    <span className="mt-1 block text-xs text-slate-500">
-                      {aiSettings.minTasks}-{aiSettings.maxTasks} {t.project.tasks}
-                    </span>
-                  </span>
-                  {taskSettingsExpanded ? (
-                    <ChevronUp className="h-5 w-5 text-slate-500" />
-                  ) : (
-                    <ChevronDown className="h-5 w-5 text-slate-500" />
-                  )}
-                </button>
-                {taskSettingsExpanded ? (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                  <Input
-                    label={t.project.minTasks}
-                    type="number"
-                    min={1}
-                    max={12}
-                    value={aiSettings.minTasks}
-                    onChange={(event) =>
-                      setAiSettings((current) => ({
-                        ...current,
-                        minTasks: event.target.value,
-                      }))
-                    }
-                  />
-                  <Input
-                    label={t.project.maxTasks}
-                    type="number"
-                    min={1}
-                    max={12}
-                    value={aiSettings.maxTasks}
-                    onChange={(event) =>
-                      setAiSettings((current) => ({
-                        ...current,
-                        maxTasks: event.target.value,
-                      }))
-                    }
-                  />
-                  </div>
-                ) : null}
-              </div>
-              <div className="grid gap-3 border-t border-slate-200 pt-3">
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-between gap-3 text-left"
-                  onClick={() =>
-                    setSubtaskSettingsExpanded((current) => !current)
-                  }
-                  aria-expanded={subtaskSettingsExpanded}
-                >
-                  <span>
-                    <span className="block text-sm font-semibold text-slate-800">
-                      {t.project.subtaskSettings}
-                    </span>
-                    <span className="mt-1 block text-xs text-slate-500">
-                      {aiSettings.createSubtasks
-                        ? `${aiSettings.minSubtasks}-${aiSettings.maxSubtasks} ${t.project.subtasks}`
-                        : t.project.subtasksDisabled}
-                    </span>
-                  </span>
-                  {subtaskSettingsExpanded ? (
-                    <ChevronUp className="h-5 w-5 text-slate-500" />
-                  ) : (
-                    <ChevronDown className="h-5 w-5 text-slate-500" />
-                  )}
-                </button>
-                {subtaskSettingsExpanded ? (
-                  <div className="grid gap-3">
-                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500"
-                        checked={aiSettings.createSubtasks}
-                        onChange={(event) =>
-                          setAiSettings((current) => ({
-                            ...current,
-                            createSubtasks: event.target.checked,
-                          }))
-                        }
-                      />
-                      {t.project.createSubtasksOnSave}
-                    </label>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <Input
-                        label={t.project.minSubtasks}
-                        type="number"
-                        min={1}
-                        max={12}
-                        value={aiSettings.minSubtasks}
-                        disabled={!aiSettings.createSubtasks}
-                        onChange={(event) =>
-                          setAiSettings((current) => ({
-                            ...current,
-                            minSubtasks: event.target.value,
-                          }))
-                        }
-                      />
-                      <Input
-                        label={t.project.maxSubtasks}
-                        type="number"
-                        min={1}
-                        max={12}
-                        value={aiSettings.maxSubtasks}
-                        disabled={!aiSettings.createSubtasks}
-                        onChange={(event) =>
-                          setAiSettings((current) => ({
-                            ...current,
-                            maxSubtasks: event.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500 disabled:opacity-50"
-                        checked={
-                          aiSettings.autoSchedule && aiSettings.createSubtasks
-                        }
-                        disabled={!aiSettings.createSubtasks}
-                        onChange={(event) =>
-                          setAiSettings((current) => ({
-                            ...current,
-                            autoSchedule: event.target.checked,
-                          }))
-                        }
-                      />
-                      {t.project.scheduleAfterSaving}
-                    </label>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-            <div data-guide="ai-generate" className="w-fit">
-              <Button type="submit" disabled={aiLoading}>
-                <Sparkles className="h-4 w-4" />
-                {t.project.generateSuggestions}
-              </Button>
-            </div>
-          </form>
+          <ErrorMessage message={aiMessage} />
 
           {aiSuggestions.length > 0 ? (
-            <div className="mt-5 grid gap-3">
+            <div className="grid gap-3">
               {aiSuggestions.map((suggestion, suggestionIndex) => (
                 <div
                   key={`${suggestion.title}-${suggestion.estimated_minutes}`}
@@ -1453,6 +1384,12 @@ export default function ProjectDetailPage() {
                       <p className="mt-1 text-sm leading-6 text-slate-600">
                         {suggestion.description}
                       </p>
+                      <div className="mt-2">
+                        <ResourceLinks
+                          resources={suggestion.resources}
+                          compact
+                        />
+                      </div>
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center gap-2">
                       <Badge
@@ -1518,11 +1455,17 @@ export default function ProjectDetailPage() {
                                 preferences.dateFormat,
                               )}
                             </p>
+                            <div className="mt-2">
+                              <ResourceLinks
+                                resources={subtask.resources}
+                                compact
+                              />
+                            </div>
                           </div>
                           <Button
                             type="button"
                             variant="secondary"
-                            className="h-9 w-9 shrink-0 px-0"
+                            className={cn(iconOnlyButtonStyles, "h-9 w-9")}
                             aria-label={t.project.repromptSubtask}
                             title={t.project.repromptSubtask}
                             onClick={() => {

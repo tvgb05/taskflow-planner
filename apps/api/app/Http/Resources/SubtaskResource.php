@@ -17,6 +17,7 @@ class SubtaskResource extends JsonResource
             'task_id' => $this->task_id,
             'title' => $this->title,
             'description' => $this->description,
+            'resources' => $this->resources ?? [],
             'status' => $this->status,
             'estimated_minutes' => $this->estimated_minutes,
             'scheduled_date' => $this->scheduled_date?->toDateString(),

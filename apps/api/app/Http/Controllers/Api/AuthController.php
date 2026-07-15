@@ -70,22 +70,20 @@ class AuthController extends Controller
 
     public function login(Request $request): JsonResponse
     {
-        $identifier = trim((string) ($request->input('identifier') ?? $request->input('email')));
-        $request->merge(['identifier' => $identifier]);
+        $email = Str::lower(trim((string) $request->input('email')));
+        $request->merge(['email' => $email]);
         $validated = $request->validate([
-            'identifier' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
             'password' => ['required', 'string'],
         ]);
 
-        $normalizedIdentifier = Str::lower($validated['identifier']);
         $user = User::query()
-            ->whereRaw('LOWER(email) = ?', [$normalizedIdentifier])
-            ->orWhereRaw('LOWER(username) = ?', [$normalizedIdentifier])
+            ->whereRaw('LOWER(email) = ?', [$validated['email']])
             ->first();
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'identifier' => ['The provided credentials are incorrect.'],
+                'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 

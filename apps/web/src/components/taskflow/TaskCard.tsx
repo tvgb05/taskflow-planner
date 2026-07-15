@@ -11,11 +11,12 @@ import {
 import { FormEvent, useState } from "react";
 
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Button, iconOnlyButtonStyles } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
+import { ResourceLinks } from "@/components/taskflow/ResourceLinks";
 import { useAppText } from "@/lib/i18n";
 import { usePreferences } from "@/lib/preferences";
 import type {
@@ -25,7 +26,7 @@ import type {
   TaskPriority,
   TaskStatus,
 } from "@/lib/types";
-import { formatDate, todayDateInputValue } from "@/lib/utils";
+import { cn, formatDate, todayDateInputValue } from "@/lib/utils";
 
 const statusTone: Record<TaskStatus, "neutral" | "info" | "success"> = {
   todo: "neutral",
@@ -225,6 +226,7 @@ export function TaskCard({
 
         {expanded ? (
           <div className="grid gap-4 border-t border-slate-100 pt-4">
+            <ResourceLinks resources={task.resources} />
             <form
               onSubmit={submitTask}
               className="grid gap-3 rounded-md bg-slate-50 p-3"
@@ -481,11 +483,12 @@ function SubtaskEditor({
           <Button
             type="button"
             variant="secondary"
-            className={
+            className={cn(
+              iconOnlyButtonStyles,
               subtask.status === "done"
-                ? "h-10 w-10 px-0 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                : "h-10 w-10 px-0"
-            }
+                ? "h-10 w-10 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                : "h-10 w-10",
+            )}
             disabled={busy}
             onClick={() =>
               guarded(() =>
@@ -510,7 +513,7 @@ function SubtaskEditor({
           <Button
             type="button"
             variant="danger"
-            className="h-10 w-10 px-0"
+            className={cn(iconOnlyButtonStyles, "h-10 w-10")}
             disabled={busy}
             onClick={() => guarded(() => onDeleteSubtask(subtask))}
             aria-label={t.common.delete}
@@ -520,6 +523,8 @@ function SubtaskEditor({
           </Button>
         </div>
       </div>
+
+      <ResourceLinks resources={subtask.resources} compact />
 
       <Textarea
         label={t.project.description}

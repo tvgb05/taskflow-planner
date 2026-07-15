@@ -33,6 +33,11 @@ class ProjectRequest extends FormRequest
                     Project::TYPE_DAILY_RECURRING,
                 ]),
             ],
+            'planning_mode' => [
+                'sometimes',
+                'string',
+                Rule::in(['phased', 'recurring', 'pipeline']),
+            ],
             'icon' => [
                 'sometimes',
                 'string',

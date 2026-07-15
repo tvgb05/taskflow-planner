@@ -31,6 +31,7 @@ class Task extends Model
         'project_id',
         'title',
         'description',
+        'resources',
         'phase',
         'source',
         'status',
@@ -44,6 +45,7 @@ class Task extends Model
         return [
             'deadline' => 'date',
             'estimated_minutes' => 'integer',
+            'resources' => 'array',
         ];
     }
 

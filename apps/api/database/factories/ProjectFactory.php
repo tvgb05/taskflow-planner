@@ -18,6 +18,7 @@ class ProjectFactory extends Factory
             'description' => fake()->sentence(),
             'icon' => 'folder',
             'project_type' => Project::TYPE_SHORT_TERM,
+            'planning_mode' => 'phased',
             'deadline' => today()->addDays(7),
             'available_minutes_per_day' => 120,
         ];

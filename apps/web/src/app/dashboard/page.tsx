@@ -20,6 +20,7 @@ import {
   GuideOverlay,
 } from "@/components/taskflow/GuideOverlay";
 import { ProjectIcon } from "@/components/taskflow/ProjectIcon";
+import { ResourceLinks } from "@/components/taskflow/ResourceLinks";
 import { WelcomeOnboardingModal } from "@/components/taskflow/WelcomeOnboardingModal";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -75,6 +76,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
+  const [creatingSampleGoal, setCreatingSampleGoal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [updatingTaskId, setUpdatingTaskId] = useState<number | null>(null);
 
@@ -123,11 +125,52 @@ export default function DashboardPage() {
     }
   }
 
-  function startOnboarding() {
+  async function startOnboarding() {
     localStorage.setItem(guideStorageKeys.welcomeSeen, "1");
     localStorage.removeItem(guideStorageKeys.welcomePending);
-    setWelcomeOpen(false);
-    setGuideOpen(true);
+
+    if (projects.length > 0) {
+      setWelcomeOpen(false);
+      setGuideOpen(true);
+      return;
+    }
+
+    setCreatingSampleGoal(true);
+    setError(null);
+
+    try {
+      const deadline = new Date();
+      deadline.setHours(12, 0, 0, 0);
+      deadline.setDate(deadline.getDate() + 7);
+      const payload = await apiRequest<Project | { data: Project }>(
+        "/projects",
+        {
+          method: "POST",
+          body: {
+            name: t.guide.welcome.sampleGoalName,
+            description: t.guide.welcome.sampleGoalDescription,
+            icon: "sparkles",
+            project_type: "short_term",
+            planning_mode: "phased",
+            deadline: deadline.toISOString().slice(0, 10),
+            available_minutes_per_day: 60,
+          },
+        },
+      );
+      const sampleGoal = unwrapResource(payload);
+
+      localStorage.setItem(
+        guideStorageKeys.projectPendingId,
+        String(sampleGoal.id),
+      );
+      setProjects([sampleGoal]);
+      setWelcomeOpen(false);
+      router.push(`/projects/${sampleGoal.id}?guide=first-project&onboarding=1`);
+    } catch {
+      setError(t.newProject.createError);
+    } finally {
+      setCreatingSampleGoal(false);
+    }
   }
 
   function skipOnboarding() {
@@ -376,6 +419,7 @@ function replaceTask(nextTask: Task) {
           open={welcomeOpen}
           onStart={startOnboarding}
           onSkip={skipOnboarding}
+          busy={creatingSampleGoal || loading}
         />
         <TaskDetailModal
           task={selectedTask}
@@ -560,6 +604,7 @@ function TaskDetailModal({
           <p className="text-sm leading-6 text-slate-700">
             {task.description || t.common.noDescription}
           </p>
+          <ResourceLinks resources={task.resources} />
           {task.estimated_minutes ? (
             <p className="text-sm text-slate-500">
               {task.estimated_minutes} {t.common.min}
@@ -592,6 +637,7 @@ function TaskDetailModal({
                         {subtask.description}
                       </p>
                     ) : null}
+                    <ResourceLinks resources={subtask.resources} compact />
                     <p className="text-xs text-slate-500">
                       {subtask.estimated_minutes ?? 30} {t.common.min}
                       {subtask.scheduled_date

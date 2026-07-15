@@ -10,10 +10,12 @@ export function WelcomeOnboardingModal({
   open,
   onStart,
   onSkip,
+  busy,
 }: {
   open: boolean;
   onStart: () => void;
   onSkip: () => void;
+  busy?: boolean;
 }) {
   const t = useAppText();
   const items = [
@@ -56,11 +58,11 @@ export function WelcomeOnboardingModal({
         </p>
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button type="button" variant="secondary" onClick={onSkip}>
+          <Button type="button" variant="secondary" onClick={onSkip} disabled={busy}>
             {t.guide.welcome.skip}
           </Button>
-          <Button type="button" onClick={onStart}>
-            {t.guide.welcome.start}
+          <Button type="button" onClick={onStart} disabled={busy}>
+            {busy ? t.guide.welcome.creatingSampleGoal : t.guide.welcome.start}
           </Button>
         </div>
       </div>

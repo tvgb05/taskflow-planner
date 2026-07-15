@@ -138,10 +138,38 @@ class GeminiTaskBreakdownService
             }, $tasks);
         }
 
+        if (is_array($tasks)) {
+            $tasks = array_map(function (mixed $task): mixed {
+                if (! is_array($task)) {
+                    return $task;
+                }
+
+                $task['resources'] = is_array($task['resources'] ?? null)
+                    ? array_values($task['resources'])
+                    : [];
+                $task['subtasks'] = array_map(function (mixed $subtask): mixed {
+                    if (! is_array($subtask)) {
+                        return $subtask;
+                    }
+
+                    $subtask['resources'] = is_array($subtask['resources'] ?? null)
+                        ? array_values($subtask['resources'])
+                        : [];
+
+                    return $subtask;
+                }, is_array($task['subtasks'] ?? null) ? $task['subtasks'] : []);
+
+                return $task;
+            }, $tasks);
+        }
+
         $rules = [
             'tasks' => ['required', 'array', "min:{$minTasks}", "max:{$maxTasks}"],
             'tasks.*.title' => ['required', 'string', 'max:255'],
             'tasks.*.description' => ['required', 'string', 'max:1200'],
+            'tasks.*.resources' => ['present', 'array', 'max:5'],
+            'tasks.*.resources.*.title' => ['required', 'string', 'max:120'],
+            'tasks.*.resources.*.url' => ['required', 'url:http,https', 'max:1000'],
             'tasks.*.phase' => ['required', 'string', 'max:120'],
             'tasks.*.deadline' => ['required', 'date', 'after_or_equal:'.CarbonImmutable::today()->toDateString(), 'before_or_equal:'.$payload['planning_end']],
             'tasks.*.estimated_minutes' => ['required', 'integer', 'min:5', 'max:10080'],
@@ -154,6 +182,9 @@ class GeminiTaskBreakdownService
         if ($createSubtasks) {
             $rules['tasks.*.subtasks.*.title'] = ['required', 'string', 'max:255'];
             $rules['tasks.*.subtasks.*.description'] = ['required', 'string', 'max:800'];
+            $rules['tasks.*.subtasks.*.resources'] = ['present', 'array', 'max:5'];
+            $rules['tasks.*.subtasks.*.resources.*.title'] = ['required', 'string', 'max:120'];
+            $rules['tasks.*.subtasks.*.resources.*.url'] = ['required', 'url:http,https', 'max:1000'];
             $rules['tasks.*.subtasks.*.estimated_minutes'] = [
                 'required',
                 'integer',
@@ -241,12 +272,6 @@ class GeminiTaskBreakdownService
             'vi' => 'Vietnamese',
             default => 'English',
         };
-        $profile = match ($payload['planning_profile'] ?? 'portfolio') {
-            'study' => 'study planner focused on learning, review, practice, and deadlines',
-            'work' => 'work sprint planner focused on execution, handoffs, and measurable outcomes',
-            'personal' => 'personal goals planner focused on sustainable habits and realistic pacing',
-            default => 'portfolio builder focused on demo-ready fullstack project work',
-        };
         $style = match ($payload['ai_style'] ?? 'concise') {
             'detailed' => 'make task descriptions and subtask descriptions specific enough to execute without guessing',
             'coach' => 'make wording encouraging while staying concrete, technical, and action-oriented',
@@ -313,6 +338,7 @@ Important planning model:
 - Subtask titles and descriptions must be detailed enough to execute without extra explanation.
 - For health, fitness, or weight-loss goals: suggest an actionable workout routine (exercise, sets/reps or duration, intensity progression) and usable meal/menu choices with portions or composition. Do not create generic tasks about researching or calculating formulas. Include a short safety note when medical context is relevant.
 - For software goals: name the feature, implementation area, verification path, and observable output.
+- Include 1-3 useful resources for each task and subtask when a trustworthy resource helps execution. Prefer official documentation, canonical GitHub repositories, and YouTube search URLs. Never invent a specific video, repository, or documentation page. Never return example.com or placeholder URLs.
 
 Goal: {$payload['goal']}
 Deadline: {$payload['deadline']}
@@ -323,7 +349,6 @@ Today: {$today}
 Existing incomplete subtask minutes already reserved: {$budget['reserved_minutes']}
 Remaining suggested-work budget: {$budget['remaining_minutes']} minutes
 Language for all user-facing task and subtask text: {$language}
-Planning profile: {$profile}
 Style: {$style}
 Plan mode: {$planMode}. {$modeInstruction}
 Project type: {$projectType}. {$projectTypeInstruction}
@@ -342,6 +367,7 @@ Return only JSON in this shape:
       "title": "Large task or milestone title",
       "phase": "Named phase or weekly routine area",
       "description": "Specific outcome, scope, and acceptance notes for this task.",
+      "resources": [],
       "deadline": "{$payload['planning_end']}",
       "estimated_minutes": 180,
       "priority": "high",
@@ -349,6 +375,7 @@ Return only JSON in this shape:
         {
           "title": "Concrete step inside this task",
           "description": "Specific action, expected output, and quick acceptance check for this subtask.",
+          "resources": [],
           "estimated_minutes": 45,
           "scheduled_date": "{$today}"
         }

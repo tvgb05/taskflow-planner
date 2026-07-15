@@ -50,12 +50,20 @@ class PlanningWorkflowTest extends TestCase
                 'title' => 'Set up the application',
                 'phase' => 'Phase 1: Foundation',
                 'description' => 'Prepare both runtimes and verify connectivity.',
+                'resources' => [[
+                    'title' => 'Laravel installation guide',
+                    'url' => 'https://laravel.com/docs/installation',
+                ]],
                 'priority' => 'high',
                 'deadline' => today()->addDay()->toDateString(),
                 'estimated_minutes' => 60,
                 'subtasks' => [[
                     'title' => 'Install dependencies',
                     'description' => 'Install PHP and Node dependencies and record versions.',
+                    'resources' => [[
+                        'title' => 'Next.js installation guide',
+                        'url' => 'https://nextjs.org/docs/app/getting-started/installation',
+                    ]],
                     'estimated_minutes' => 60,
                     'scheduled_date' => today()->toDateString(),
                 ]],
@@ -69,6 +77,14 @@ class PlanningWorkflowTest extends TestCase
             'project_id' => $project->id,
             'source' => Task::SOURCE_AI,
         ]);
+        $this->assertSame(
+            [['title' => 'Laravel installation guide', 'url' => 'https://laravel.com/docs/installation']],
+            Task::query()->firstOrFail()->resources,
+        );
+        $this->assertSame(
+            [['title' => 'Next.js installation guide', 'url' => 'https://nextjs.org/docs/app/getting-started/installation']],
+            Subtask::query()->firstOrFail()->resources,
+        );
     }
 
     public function test_a_project_can_be_classified_when_it_is_created(): void
@@ -81,15 +97,18 @@ class PlanningWorkflowTest extends TestCase
             'description' => 'Plan study work across the semester.',
             'icon' => 'book',
             'project_type' => Project::TYPE_LONG_TERM,
+            'planning_mode' => 'recurring',
             'deadline' => today()->addMonth()->toDateString(),
             'available_minutes_per_day' => 90,
         ]);
 
         $response->assertCreated()
-            ->assertJsonPath('data.project_type', Project::TYPE_LONG_TERM);
+            ->assertJsonPath('data.project_type', Project::TYPE_LONG_TERM)
+            ->assertJsonPath('data.planning_mode', 'recurring');
         $this->assertDatabaseHas('projects', [
             'user_id' => $user->id,
             'project_type' => Project::TYPE_LONG_TERM,
+            'planning_mode' => 'recurring',
         ]);
     }
 
@@ -467,7 +486,7 @@ class PlanningWorkflowTest extends TestCase
             ->assertJsonPath('data.username', 'public');
     }
 
-    public function test_a_user_can_login_with_either_email_or_username(): void
+    public function test_a_user_can_login_with_email_but_not_username(): void
     {
         $user = User::factory()->create([
             'username' => 'morning_planner',
@@ -477,21 +496,19 @@ class PlanningWorkflowTest extends TestCase
         $this->withHeader('Origin', 'http://localhost:3000');
 
         $this->postJson('/api/login', [
-            'identifier' => 'planner@example.com',
-            'password' => 'password123',
-        ])->assertOk()->assertJsonPath('user.id', $user->id);
-
-        $this->postJson('/api/logout')->assertOk();
-
-        $this->postJson('/api/login', [
-            'identifier' => 'MORNING_PLANNER',
-            'password' => 'password123',
-        ])->assertOk()->assertJsonPath('user.id', $user->id);
-
-        $this->postJson('/api/logout')->assertOk();
-
-        $this->postJson('/api/login', [
             'email' => 'planner@example.com',
+            'password' => 'password123',
+        ])->assertOk()->assertJsonPath('user.id', $user->id);
+
+        $this->postJson('/api/logout')->assertOk();
+
+        $this->postJson('/api/login', [
+            'email' => 'MORNING_PLANNER',
+            'password' => 'password123',
+        ])->assertUnprocessable()->assertJsonValidationErrors('email');
+
+        $this->postJson('/api/login', [
+            'email' => 'PLANNER@EXAMPLE.COM',
             'password' => 'password123',
         ])->assertOk()->assertJsonPath('user.id', $user->id);
     }

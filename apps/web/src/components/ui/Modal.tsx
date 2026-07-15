@@ -1,7 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
+import { Button, iconOnlyButtonStyles } from "@/components/ui/Button";
 import { useAppText } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 export function Modal({
   open,
@@ -28,7 +29,10 @@ export function Modal({
           <Button
             type="button"
             variant="ghost"
-            className="h-9 w-9 px-0 text-base font-bold leading-none text-slate-700"
+            className={cn(
+              iconOnlyButtonStyles,
+              "h-9 w-9 text-base font-bold leading-none text-slate-700",
+            )}
             onClick={onClose}
             aria-label={t.modal.close}
             title={t.modal.close}

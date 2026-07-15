@@ -15,6 +15,7 @@ export type Project = {
   description: string | null;
   icon: string;
   project_type: ProjectType;
+  planning_mode: PlanningMode;
   deadline: string;
   available_minutes_per_day: number;
   tasks_count: number;
@@ -26,6 +27,12 @@ export type Project = {
 };
 
 export type ProjectType = "short_term" | "long_term" | "daily_recurring";
+export type PlanningMode = "phased" | "recurring" | "pipeline";
+
+export type ResourceLink = {
+  title: string;
+  url: string;
+};
 
 export type TaskStatus = "todo" | "in_progress" | "done";
 export type TaskPriority = "low" | "medium" | "high";
@@ -36,6 +43,7 @@ export type Task = {
   project_id: number;
   title: string;
   description: string | null;
+  resources: ResourceLink[];
   phase: string | null;
   source: "manual" | "ai";
   status: TaskStatus;
@@ -52,6 +60,7 @@ export type Subtask = {
   task_id: number;
   title: string;
   description: string | null;
+  resources: ResourceLink[];
   status: SubtaskStatus;
   estimated_minutes: number | null;
   scheduled_date: string | null;
@@ -77,6 +86,7 @@ export type ScheduleDay = {
 export type AiSuggestedSubtask = {
   title: string;
   description: string;
+  resources: ResourceLink[];
   estimated_minutes: number;
   scheduled_date: string;
 };
@@ -85,6 +95,7 @@ export type AiSuggestion = {
   title: string;
   phase: string;
   description: string;
+  resources: ResourceLink[];
   deadline: string;
   estimated_minutes: number;
   priority: TaskPriority;

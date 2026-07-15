@@ -49,6 +49,7 @@ class AiBreakdownController extends Controller
         $this->rememberFeedback($request, $project, $payload);
         $payload['feedback_context'] = $this->feedbackContext($project);
         $payload['project_type'] = $project->project_type;
+        $payload['plan_mode'] = $project->planning_mode;
         $payload['task_pattern_context'] = ($payload['learn_from_user_tasks'] ?? true)
             ? $this->taskPatternContext($request->user()->id)
             : '';

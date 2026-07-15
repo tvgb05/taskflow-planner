@@ -9,7 +9,7 @@ export const appText = {
       all: "All",
       back: "Back",
       cancel: "Cancel",
-      createProject: "Create project",
+      createProject: "Create goal",
       delete: "Delete",
       done: "Done",
       due: "Due",
@@ -18,11 +18,11 @@ export const appText = {
       minutes: "minutes",
       min: "min",
       minPerDay: "min/day",
-      newProject: "New project",
+      newProject: "New goal",
       noDate: "No date",
       noDescription: "No description",
       priority: "Priority",
-      projects: "Projects",
+      projects: "Goals",
       reset: "Reset",
       saveChanges: "Save changes",
       status: "Status",
@@ -69,7 +69,7 @@ export const appText = {
       dateFormat: "Date format",
       learnFromTaskPatterns: "Learn from my task format",
       learnFromTaskPatternsHint:
-        "Let AI imitate the structure and detail level of tasks you create manually. Project content is not copied.",
+        "Let AI imitate the structure and detail level of tasks you create manually. Goal content is not copied.",
       english: "English",
       vietnamese: "Vietnamese",
       profile: "Profile",
@@ -79,6 +79,7 @@ export const appText = {
       close: "Close guide",
       next: "Next",
       done: "Done",
+      highlightHint: "Use the highlighted area, then continue to the next step.",
       welcome: {
         title: "Wake up with a clear next step",
         introduction:
@@ -99,18 +100,22 @@ export const appText = {
             "Mark completed work and describe what helped or got in the way. Daily planning uses that feedback as its highest-priority context for the next plan.",
         },
         tourDescription:
-          "The short tour will show you how to create a project, add tasks, mark work Done, and give the assistant feedback for the next day.",
+          "The short tour creates a sample goal, then shows you how to generate tasks, mark work Done, and give the assistant feedback.",
         start: "Start the tour",
         skip: "Explore on my own",
+        creatingSampleGoal: "Creating your sample goal...",
+        sampleGoalName: "Crochet a simple tote bag",
+        sampleGoalDescription:
+          "- Main goal: Finish one simple crochet tote bag that can carry light personal items.\n- Supporting goals: Choose yarn and hook, learn the base stitch, make the body, and attach sturdy handles.\n- Skills gained: Read a beginner pattern, maintain even tension, join pieces, and finish loose ends.\n- Constraints: Work about 60 minutes per day using beginner-friendly materials.\n- Done criteria: The bag holds its shape, both handles are secure, and loose ends are hidden.",
       },
       dashboardSteps: [
         {
-          title: "Create your first project",
+          title: "Open your first goal",
           description:
             "Start here when you have a goal, deadline, and daily time budget.",
           details: [
-            "Click New project.",
-            "Add a goal name, project type, deadline, and minutes per day.",
+            "The tour creates a simple crochet goal for you.",
+            "Open a goal to review its type, planning mode, deadline, and minutes per day.",
             "Use Description as the AI brief: explain the target user, scope, required features, tech constraints, and what done should look like.",
           ],
         },
@@ -129,10 +134,10 @@ export const appText = {
         {
           title: "Name the outcome",
           description:
-            "Use the project name as a short promise of what you want to finish.",
+            "Use the goal name as a short promise of what you want to finish.",
           details: [
             "Prefer concrete names like Portfolio planner MVP over vague study app.",
-            "The name helps you recognize the project in dashboards and schedules.",
+            "The name helps you recognize the goal in dashboards and schedules.",
           ],
         },
         {
@@ -157,7 +162,7 @@ export const appText = {
         {
           title: "Create and review",
           description:
-            "Save the project, then review AI suggestions before saving them as tasks.",
+            "Save the goal, then review AI suggestions before saving them as tasks.",
           details: [
             "Saved AI tasks can be expanded, edited, and checked with their subtasks.",
           ],
@@ -165,7 +170,7 @@ export const appText = {
       ],
       projectSteps: [
         {
-          title: "Confirm the project frame",
+          title: "Confirm the goal details",
           description:
             "This is the goal contract: deadline and daily capacity shape every schedule.",
           details: [
@@ -198,43 +203,25 @@ export const appText = {
           description:
             "Open a task to review its details, then use Done when the work is complete.",
           details: [
-            "Completing work updates project progress on the dashboard.",
+            "Completing work updates goal progress on the dashboard.",
             "Your completion pattern and written feedback help the next daily plan reflect what actually happened.",
           ],
         },
       ],
       aiSuggestSteps: [
         {
-          title: "Describe the result",
+          title: "Choose the response detail",
           description:
-            "Give the assistant enough context to turn the project into practical work.",
+            "The assistant already uses the goal description. Choose how much explanation the plan should contain.",
           details: [
-            "State the result you need, important constraints, and what completed work should look like.",
-            "Add concrete requirements instead of relying on the project name alone.",
-          ],
-        },
-        {
-          title: "Choose the AI profile and response",
-          description:
-            "The profile changes the kind of work suggested; the response style changes how much explanation you receive.",
-          details: [
-            "Choose the profile closest to this project's purpose.",
-            "Detailed is a strong default when you need actionable instructions.",
-          ],
-        },
-        {
-          title: "Choose a planning mode and give feedback",
-          description:
-            "Use phases for a one-time project, weekly repetition for routines, or next-day planning when feedback should guide each day.",
-          details: [
-            "Next-day planning reveals a feedback field for what worked, what was difficult, and what should change tomorrow.",
-            "That feedback is treated as the highest-priority context for the next daily suggestion.",
+            "Edit the goal description above when the main result, supporting outcomes, skills, or constraints change.",
+            "Detailed is the best default for instructions you can follow immediately.",
           ],
         },
         {
           title: "Control the amount of work",
           description:
-            "Set task and subtask limits so the draft stays useful and fits the project deadline.",
+            "Set task and subtask limits so the draft stays useful and fits the goal deadline.",
           details: [
             "Task and subtask controls start collapsed; open only the section you want to adjust.",
             "Tasks should represent meaningful outcomes; subtasks should explain the concrete steps.",
@@ -242,12 +229,12 @@ export const appText = {
           ],
         },
         {
-          title: "Generate, review, then save",
+          title: "Generate the plan",
           description:
-            "Create a draft and review every task before adding it to the project.",
+            "Click Generate suggestions. The plan opens in a review window when it is ready.",
           details: [
-            "Regenerate any unclear task or subtask and explain what should improve. Your feedback is remembered for future suggestions in this project.",
-            "Save suggestions only after deadlines, descriptions, and scheduled steps look right.",
+            "The review window includes tasks, steps, deadlines, and useful learning resources.",
+            "Regenerate anything unsuitable before saving the plan to the goal.",
           ],
         },
       ],
@@ -255,53 +242,55 @@ export const appText = {
     dashboard: {
       title: "Dashboard",
       description:
-        "A compact view of current project load, deadlines, and scheduled work.",
+        "A compact view of current goals, deadlines, and scheduled work.",
       loadError: "Unable to load dashboard data.",
       loading: "Loading dashboard",
-      projects: "Projects",
+      projects: "Goals",
       dueSoon: "Due soon",
       inProgress: "In progress",
       today: "Today",
       tasksDueSoon: "Tasks due soon",
       todayScheduledSubtasks: "Today scheduled subtasks",
       noSubtasksToday: "No subtasks scheduled today",
-      projectProgress: "Project progress",
+      projectProgress: "Goal progress",
       noUpcomingTaskDeadlines: "No upcoming task deadlines",
       completeTask: "Mark task complete",
       reopenTask: "Reopen task",
       taskDetails: "Task details",
     },
     projects: {
-      title: "Projects",
+      title: "Goals",
       description:
         "Plan goals, track progress, and schedule subtasks before deadlines.",
-      loadError: "Unable to load projects.",
-      loading: "Loading projects",
-      emptyTitle: "No projects yet",
-      emptyDescription: "Create a project with a deadline and daily capacity.",
-      openProject: "Open project",
+      loadError: "Unable to load goals.",
+      loading: "Loading goals",
+      emptyTitle: "No goals yet",
+      emptyDescription: "Create a goal with a deadline and daily capacity.",
+      openProject: "Open goal",
     },
     newProject: {
-      title: "New project",
-      description: "Set the goal, deadline, and daily planning capacity.",
-      projectName: "Project name",
+      title: "New goal",
+      description: "Set the outcome, planning approach, deadline, and daily capacity.",
+      projectName: "Goal name",
       descriptionLabel: "Description",
       descriptionPlaceholder:
-        "Example: Build a portfolio task planner for students with auth, projects, AI task breakdown, schedule generation, and a demo-ready dashboard.",
+        "- Main goal: Build a task planner students can use every day.\n- Supporting goals: Add sign-in, goals, AI breakdown, schedules, and a useful dashboard.\n- Skills gained: Next.js, Laravel, database design, API integration, and deployment.\n- Constraints: Finish an MVP before the deadline with the available daily time.\n- Done criteria: A new user can register, create a goal, generate a plan, and mark work complete.",
+      descriptionHint:
+        "Use one bullet per outcome, supporting result, skill, constraint, or completion criterion. The assistant uses this description as its planning brief.",
       deadline: "Deadline",
       availableMinutes: "Available minutes per day",
-      saveProject: "Save project",
-      createError: "Unable to create project.",
+      saveProject: "Save goal",
+      createError: "Unable to create goal.",
     },
     project: {
-      fallbackTitle: "Project",
-      fallbackDescription: "Project workspace",
-      loading: "Loading project",
-      projectInformation: "Project information",
-      projectInformationHint: "Update the project context used for planning.",
+      fallbackTitle: "Goal",
+      fallbackDescription: "Goal workspace",
+      loading: "Loading goal",
+      projectInformation: "Goal information",
+      projectInformationHint: "Update the description and planning context used by the assistant.",
       name: "Name",
-      icon: "Project icon",
-      projectType: "Project type",
+      icon: "Goal icon",
+      projectType: "Goal type",
       shortTerm: "Short-term",
       longTerm: "Long-term",
       dailyRecurring: "Daily recurring",
@@ -312,13 +301,9 @@ export const appText = {
       generateSchedule: "Generate schedule",
       refreshSchedule: "Refresh schedule",
       aiBreakdown: "AI breakdown",
-      aiCallout: "Turn the project goal into detailed tasks and scheduled subtasks.",
+      aiPlan: "AI-generated plan",
+      aiCallout: "Use the goal description to generate detailed tasks, scheduled steps, and useful resources.",
       aiSettings: "AI settings",
-      planningProfile: "AI profile",
-      portfolio: "Portfolio builder",
-      study: "Study planner",
-      work: "Work sprint",
-      personal: "Personal goals",
       aiStyle: "Response style",
       concise: "Concise",
       detailed: "Detailed",
@@ -346,7 +331,7 @@ export const appText = {
       addTask: "Add task",
       dueBefore: "Due before",
       noTasksMatch: "No tasks match",
-      noTasksDescription: "Adjust filters or add a task to this project.",
+      noTasksDescription: "Adjust filters or add a task to this goal.",
       scheduleView: "Schedule view",
       goal: "Goal",
       generateSuggestions: "Generate suggestions",
@@ -356,7 +341,8 @@ export const appText = {
       repromptTaskDialogTitle: "Regenerate this task",
       repromptSubtaskDialogTitle: "Regenerate this subtask",
       repromptMemoryNotice:
-        "Your feedback is saved to this project's AI memory and will guide future suggestions.",
+        "Your feedback is saved to this goal's AI memory and will guide future suggestions.",
+      resources: "Resources",
       repromptLabel: "What should change?",
       repromptPlaceholder:
         "Example: Make this task more practical, reduce the scope, and add clearer setup steps.",
@@ -377,17 +363,17 @@ export const appText = {
       subtask: "Subtask",
       date: "Date",
       addSubtask: "Add subtask",
-      designProjectForm: "Design project form",
+      designProjectForm: "Design goal form",
       requestAiError: "Unable to request AI suggestions.",
       saveAiError: "Unable to save suggestions.",
       autoScheduleError: "Suggestions were saved, but the schedule could not be refreshed.",
-      loadProjectError: "Unable to load project.",
-      updateProjectError: "Unable to update project.",
-      deleteProjectError: "Unable to delete project.",
-      deleteProjectTitle: "Delete project?",
+      loadProjectError: "Unable to load goal.",
+      updateProjectError: "Unable to update goal.",
+      deleteProjectError: "Unable to delete goal.",
+      deleteProjectTitle: "Delete goal?",
       deleteProjectWarning: "This action cannot be undone.",
       deleteProjectDescription:
-        "The project, all of its tasks, subtasks, and schedule data will be permanently deleted.",
+        "The goal, all of its tasks, steps, and schedule data will be permanently deleted.",
       deletingProject: "Deleting...",
       createTaskError: "Unable to create task.",
       updateTaskError: "Unable to update task.",
@@ -408,7 +394,6 @@ export const appText = {
     auth: {
       loginSubtitle: "Sign in to your workspace.",
       email: "Email",
-      loginIdentifier: "Username or email",
       username: "Username",
       usernameHint: "Use 3-30 lowercase letters, numbers, or underscores.",
       password: "Password",
@@ -416,7 +401,7 @@ export const appText = {
       needAccount: "Need an account?",
       register: "Register",
       createAccount: "Create account",
-      registerSubtitle: "Start planning projects with tasks and subtasks.",
+      registerSubtitle: "Turn goals into practical tasks and daily steps.",
       name: "Name",
       confirmPassword: "Confirm password",
       otp: "Email verification code",
@@ -436,7 +421,7 @@ export const appText = {
       all: "Tất cả",
       back: "Quay lại",
       cancel: "Hủy",
-      createProject: "Tạo dự án",
+      createProject: "Tạo mục tiêu",
       delete: "Xóa",
       done: "Xong",
       due: "Hạn",
@@ -445,11 +430,11 @@ export const appText = {
       minutes: "phút",
       min: "phút",
       minPerDay: "phút/ngày",
-      newProject: "Dự án mới",
+      newProject: "Mục tiêu mới",
       noDate: "Chưa có ngày",
       noDescription: "Chưa có mô tả",
       priority: "Độ ưu tiên",
-      projects: "Dự án",
+      projects: "Mục tiêu",
       reset: "Đặt lại",
       saveChanges: "Lưu thay đổi",
       status: "Trạng thái",
@@ -496,7 +481,7 @@ export const appText = {
       dateFormat: "Định dạng ngày tháng",
       learnFromTaskPatterns: "Học theo cách tôi viết nhiệm vụ",
       learnFromTaskPatternsHint:
-        "Cho phép trợ lý học cấu trúc và mức độ chi tiết từ các nhiệm vụ bạn tự tạo. Nội dung của dự án khác sẽ không bị sao chép.",
+        "Cho phép trợ lý học cấu trúc và mức độ chi tiết từ các nhiệm vụ bạn tự tạo. Nội dung của mục tiêu khác sẽ không bị sao chép.",
       english: "Tiếng Anh",
       vietnamese: "Tiếng Việt",
       profile: "Hồ sơ",
@@ -506,6 +491,7 @@ export const appText = {
       close: "Đóng hướng dẫn",
       next: "Tiếp",
       done: "Hoàn tất",
+      highlightHint: "Thao tác tại vùng đang được làm nổi bật, sau đó chuyển sang bước tiếp theo.",
       welcome: {
         title: "Thức dậy và biết rõ việc cần làm",
         introduction:
@@ -526,18 +512,22 @@ export const appText = {
             "Đánh dấu việc đã xong và ghi lại điều thuận lợi hoặc trở ngại. Khi lập kế hoạch từng ngày, trợ lý sẽ ưu tiên phản hồi đó cho kế hoạch kế tiếp.",
         },
         tourDescription:
-          "Hướng dẫn ngắn sau đây sẽ chỉ bạn cách tạo dự án, thêm nhiệm vụ, đánh dấu Xong và gửi phản hồi để trợ lý chuẩn bị kế hoạch ngày tiếp theo.",
+          "Hướng dẫn sẽ tạo sẵn một mục tiêu mẫu, sau đó chỉ bạn cách tạo nhiệm vụ, đánh dấu Xong và gửi phản hồi cho trợ lý.",
         start: "Bắt đầu hướng dẫn",
         skip: "Tự khám phá",
+        creatingSampleGoal: "Đang tạo mục tiêu mẫu...",
+        sampleGoalName: "Móc một chiếc túi len đơn giản",
+        sampleGoalDescription:
+          "- Mục tiêu chính: Hoàn thành một chiếc túi len đơn giản có thể đựng các vật dụng nhẹ.\n- Mục tiêu phụ: Chọn len và kim móc, học mũi nền, móc thân túi và gắn quai chắc chắn.\n- Kỹ năng đạt được: Đọc mẫu cơ bản, giữ lực tay đều, nối các phần và giấu đầu len.\n- Giới hạn: Thực hiện khoảng 60 phút mỗi ngày bằng vật liệu phù hợp cho người mới.\n- Tiêu chí hoàn thành: Túi giữ được dáng, hai quai chắc chắn và các đầu len đã được giấu.",
       },
       dashboardSteps: [
         {
-          title: "Tạo dự án đầu tiên",
+          title: "Mở mục tiêu đầu tiên",
           description:
             "Bắt đầu ở đây khi bạn có mục tiêu, hạn chót và quỹ thời gian mỗi ngày.",
           details: [
-            "Bấm Dự án mới.",
-            "Nhập tên mục tiêu, loại dự án, hạn chót và số phút có thể dành ra mỗi ngày.",
+            "Hướng dẫn sẽ tạo sẵn mục tiêu móc một chiếc túi len đơn giản.",
+            "Mở mục tiêu để xem loại, chế độ lập kế hoạch, hạn chót và số phút mỗi ngày.",
             "Trong phần Mô tả, hãy ghi rõ người sử dụng, phạm vi, tính năng cần có, các giới hạn và kết quả được xem là hoàn thành để trợ lý hiểu đúng yêu cầu.",
           ],
         },
@@ -556,10 +546,10 @@ export const appText = {
         {
           title: "Đặt tên kết quả",
           description:
-            "Tên dự án nên mô tả ngắn gọn kết quả bạn muốn hoàn thành.",
+            "Tên mục tiêu nên mô tả ngắn gọn kết quả bạn muốn hoàn thành.",
           details: [
             "Ưu tiên tên cụ thể như Hoàn thành hồ sơ năng lực cá nhân thay vì Ứng dụng học tập chung chung.",
-            "Tên này giúp bạn dễ nhận ra dự án trên trang tổng quan và lịch làm.",
+            "Tên này giúp bạn dễ nhận ra mục tiêu trên trang tổng quan và lịch làm.",
           ],
         },
         {
@@ -584,7 +574,7 @@ export const appText = {
         {
           title: "Tạo rồi rà lại",
           description:
-            "Lưu dự án, sau đó xem lại các gợi ý trước khi lưu thành nhiệm vụ.",
+            "Lưu mục tiêu, sau đó xem lại các gợi ý trước khi lưu thành nhiệm vụ.",
           details: [
             "Bạn có thể mở, chỉnh sửa và kiểm tra từng nhiệm vụ cùng các bước thực hiện bên trong.",
           ],
@@ -592,7 +582,7 @@ export const appText = {
       ],
       projectSteps: [
         {
-          title: "Kiểm tra thông tin dự án",
+          title: "Kiểm tra thông tin mục tiêu",
           description:
             "Hạn chót và thời lượng mỗi ngày trong phần này sẽ quyết định lịch làm.",
           details: [
@@ -607,7 +597,7 @@ export const appText = {
             "Trợ lý sẽ chia nhỏ công việc, nhưng bạn vẫn nên xem lại trước khi lưu.",
           details: [
             "Thông tin kết nối của trợ lý được bảo vệ ở máy chủ.",
-            "Lịch làm được kiểm tra để không vượt quá thời gian của dự án.",
+            "Lịch làm được kiểm tra để không vượt quá thời gian của mục tiêu.",
           ],
         },
         {
@@ -625,43 +615,25 @@ export const appText = {
           description:
             "Mở một nhiệm vụ để xem chi tiết, sau đó dùng nút Xong khi công việc đã hoàn thành.",
           details: [
-            "Việc đánh dấu hoàn tất sẽ cập nhật tiến độ dự án trên trang tổng quan.",
+            "Việc đánh dấu hoàn tất sẽ cập nhật tiến độ mục tiêu trên trang tổng quan.",
             "Nhịp độ hoàn thành cùng phản hồi bạn nhập giúp kế hoạch ngày sau sát hơn với điều đã thực sự diễn ra.",
           ],
         },
       ],
       aiSuggestSteps: [
         {
-          title: "Mô tả kết quả cần đạt",
+          title: "Chọn mức độ chi tiết",
           description:
-            "Cung cấp đủ thông tin để trợ lý biến dự án thành các công việc thực tế.",
+            "Trợ lý đã dùng phần mô tả mục tiêu. Bạn chỉ cần chọn mức độ giải thích mong muốn trong kế hoạch.",
           details: [
-            "Nêu kết quả cần có, các giới hạn quan trọng và thế nào được xem là hoàn thành.",
-            "Ghi yêu cầu cụ thể thay vì chỉ dựa vào tên dự án.",
-          ],
-        },
-        {
-          title: "Chọn hồ sơ và cách trả lời",
-          description:
-            "Hồ sơ quyết định loại công việc được đề xuất; cách trả lời quyết định mức độ giải thích của trợ lý.",
-          details: [
-            "Chọn hồ sơ gần nhất với mục đích của dự án này.",
-            "Chi tiết là lựa chọn phù hợp khi bạn cần chỉ dẫn có thể làm theo ngay.",
-          ],
-        },
-        {
-          title: "Chọn cách lập kế hoạch và gửi phản hồi",
-          description:
-            "Chọn theo giai đoạn cho dự án làm một lần, lặp theo tuần cho thói quen, hoặc từng ngày khi phản hồi mỗi ngày cần được ưu tiên.",
-          details: [
-            "Chế độ từng ngày sẽ hiện ô phản hồi để bạn ghi điều hiệu quả, điều khó khăn và việc cần thay đổi vào ngày mai.",
-            "Phản hồi này được ưu tiên cao nhất khi trợ lý tạo gợi ý cho ngày kế tiếp.",
+            "Chỉnh mô tả mục tiêu phía trên khi mục tiêu chính, mục tiêu phụ, kỹ năng hoặc giới hạn thay đổi.",
+            "Chi tiết là lựa chọn phù hợp khi bạn cần hướng dẫn có thể làm theo ngay.",
           ],
         },
         {
           title: "Giới hạn khối lượng công việc",
           description:
-            "Đặt số nhiệm vụ và bước thực hiện để bản nháp vừa hữu ích, vừa nằm trong hạn chót của dự án.",
+            "Đặt số nhiệm vụ và bước thực hiện để bản nháp vừa hữu ích, vừa nằm trong hạn chót của mục tiêu.",
           details: [
             "Phần nhiệm vụ và bước thực hiện được thu gọn mặc định; chỉ mở phần bạn cần điều chỉnh.",
             "Nhiệm vụ nên là kết quả lớn; các bước thực hiện nên mô tả việc cụ thể cần làm.",
@@ -669,12 +641,12 @@ export const appText = {
           ],
         },
         {
-          title: "Tạo, xem lại rồi lưu",
+          title: "Tạo kế hoạch",
           description:
-            "Tạo bản nháp và kiểm tra từng nhiệm vụ trước khi thêm vào dự án.",
+            "Bấm Tạo gợi ý. Khi hoàn tất, kế hoạch sẽ mở trong cửa sổ để bạn xem lại.",
           details: [
-            "Tạo lại nhiệm vụ hoặc bước thực hiện chưa phù hợp và nêu rõ điều cần cải thiện. Phản hồi sẽ được ghi nhớ cho các gợi ý sau trong dự án này.",
-            "Chỉ lưu khi hạn chót, nội dung và ngày làm của các bước đã hợp lý.",
+            "Cửa sổ xem lại gồm nhiệm vụ, bước thực hiện, hạn chót và nguồn tài liệu hữu ích.",
+            "Tạo lại phần chưa phù hợp trước khi lưu kế hoạch vào mục tiêu.",
           ],
         },
       ],
@@ -685,50 +657,52 @@ export const appText = {
         "Thông tin ngắn gọn về khối lượng công việc, hạn chót và các việc đã lên lịch.",
       loadError: "Không tải được dữ liệu tổng quan.",
       loading: "Đang tải tổng quan",
-      projects: "Dự án",
+      projects: "Mục tiêu",
       dueSoon: "Sắp tới hạn",
       inProgress: "Đang làm",
       today: "Hôm nay",
       tasksDueSoon: "Nhiệm vụ sắp tới hạn",
       todayScheduledSubtasks: "Các bước thực hiện hôm nay",
       noSubtasksToday: "Hôm nay chưa có bước thực hiện nào",
-      projectProgress: "Tiến độ dự án",
+      projectProgress: "Tiến độ mục tiêu",
       noUpcomingTaskDeadlines: "Chưa có nhiệm vụ nào sắp tới hạn",
       completeTask: "Đánh dấu nhiệm vụ hoàn tất",
       reopenTask: "Mở lại nhiệm vụ",
       taskDetails: "Chi tiết nhiệm vụ",
     },
     projects: {
-      title: "Dự án",
+      title: "Mục tiêu",
       description:
         "Lập mục tiêu, theo dõi tiến độ và lên lịch các bước thực hiện trước hạn chót.",
-      loadError: "Không tải được danh sách dự án.",
-      loading: "Đang tải dự án",
-      emptyTitle: "Chưa có dự án",
-      emptyDescription: "Tạo dự án với hạn chót và thời lượng mỗi ngày.",
-      openProject: "Mở dự án",
+      loadError: "Không tải được danh sách mục tiêu.",
+      loading: "Đang tải mục tiêu",
+      emptyTitle: "Chưa có mục tiêu",
+      emptyDescription: "Tạo mục tiêu với hạn chót và thời lượng mỗi ngày.",
+      openProject: "Mở mục tiêu",
     },
     newProject: {
-      title: "Dự án mới",
+      title: "Mục tiêu mới",
       description: "Thiết lập mục tiêu, hạn chót và quỹ thời gian mỗi ngày.",
-      projectName: "Tên dự án",
+      projectName: "Tên mục tiêu",
       descriptionLabel: "Mô tả",
       descriptionPlaceholder:
-        "Ví dụ: Xây dựng ứng dụng lập kế hoạch cho sinh viên, có đăng nhập, quản lý dự án, trợ lý chia nhỏ công việc, tạo lịch và trang tổng quan có thể chạy thử.",
+        "- Mục tiêu chính: Xây dựng ứng dụng lập kế hoạch sinh viên có thể dùng mỗi ngày.\n- Mục tiêu phụ: Có đăng nhập, mục tiêu, trợ lý chia nhỏ công việc, lịch và trang tổng quan.\n- Kỹ năng đạt được: Next.js, Laravel, thiết kế cơ sở dữ liệu, kết nối API và triển khai.\n- Giới hạn: Hoàn thành bản dùng thử trước hạn chót với quỹ thời gian hiện có.\n- Tiêu chí hoàn thành: Người mới có thể đăng ký, tạo mục tiêu, nhận kế hoạch và đánh dấu công việc hoàn tất.",
+      descriptionHint:
+        "Mỗi gạch đầu dòng nên nêu một kết quả, mục tiêu phụ, kỹ năng, giới hạn hoặc tiêu chí hoàn thành. Trợ lý sẽ dùng phần mô tả này làm yêu cầu lập kế hoạch.",
       deadline: "Hạn chót",
       availableMinutes: "Số phút mỗi ngày",
-      saveProject: "Lưu dự án",
-      createError: "Không tạo được dự án.",
+      saveProject: "Lưu mục tiêu",
+      createError: "Không tạo được mục tiêu.",
     },
     project: {
-      fallbackTitle: "Dự án",
-      fallbackDescription: "Khu vực làm việc của dự án",
-      loading: "Đang tải dự án",
-      projectInformation: "Thông tin dự án",
+      fallbackTitle: "Mục tiêu",
+      fallbackDescription: "Khu vực làm việc của mục tiêu",
+      loading: "Đang tải mục tiêu",
+      projectInformation: "Thông tin mục tiêu",
       projectInformationHint: "Điều chỉnh thông tin trợ lý dùng để lập kế hoạch.",
       name: "Tên",
-      icon: "Biểu tượng dự án",
-      projectType: "Loại dự án",
+      icon: "Biểu tượng mục tiêu",
+      projectType: "Loại mục tiêu",
       shortTerm: "Ngắn hạn",
       longTerm: "Dài hạn",
       dailyRecurring: "Lặp lại hằng ngày",
@@ -739,13 +713,9 @@ export const appText = {
       generateSchedule: "Tạo lịch",
       refreshSchedule: "Làm mới lịch",
       aiBreakdown: "Trợ lý chia nhỏ công việc",
-      aiCallout: "Biến mục tiêu dự án thành các nhiệm vụ chi tiết và bước thực hiện có ngày làm.",
+      aiPlan: "Kế hoạch do trợ lý tạo",
+      aiCallout: "Dùng phần mô tả mục tiêu để tạo nhiệm vụ, bước thực hiện có lịch và nguồn tài liệu hữu ích.",
       aiSettings: "Cài đặt trợ lý",
-      planningProfile: "Hồ sơ trợ lý",
-      portfolio: "Xây dựng hồ sơ năng lực",
-      study: "Kế hoạch học tập",
-      work: "Đợt công việc ngắn",
-      personal: "Mục tiêu cá nhân",
       aiStyle: "Cách trình bày câu trả lời",
       concise: "Ngắn gọn",
       detailed: "Chi tiết",
@@ -773,7 +743,7 @@ export const appText = {
       addTask: "Thêm nhiệm vụ",
       dueBefore: "Hạn trước ngày",
       noTasksMatch: "Không có nhiệm vụ phù hợp",
-      noTasksDescription: "Đổi bộ lọc hoặc thêm nhiệm vụ vào dự án.",
+      noTasksDescription: "Đổi bộ lọc hoặc thêm nhiệm vụ vào mục tiêu.",
       scheduleView: "Lịch làm",
       goal: "Mục tiêu",
       generateSuggestions: "Tạo gợi ý",
@@ -783,7 +753,8 @@ export const appText = {
       repromptTaskDialogTitle: "Tạo lại nhiệm vụ này",
       repromptSubtaskDialogTitle: "Tạo lại bước thực hiện này",
       repromptMemoryNotice:
-        "Phản hồi này được lưu vào bộ nhớ trợ lý của dự án và sẽ định hướng các gợi ý sau.",
+        "Phản hồi này được lưu vào bộ nhớ trợ lý của mục tiêu và sẽ định hướng các gợi ý sau.",
+      resources: "Nguồn tài liệu",
       repromptLabel: "Bạn muốn thay đổi điều gì?",
       repromptPlaceholder:
         "Ví dụ: Làm nhiệm vụ này thực tế hơn, giảm phạm vi và thêm các bước chuẩn bị rõ ràng.",
@@ -804,17 +775,17 @@ export const appText = {
       subtask: "Bước thực hiện",
       date: "Ngày",
       addSubtask: "Thêm bước thực hiện",
-      designProjectForm: "Thiết kế biểu mẫu dự án",
+      designProjectForm: "Thiết kế biểu mẫu mục tiêu",
       requestAiError: "Không nhận được gợi ý từ trợ lý.",
       saveAiError: "Không lưu được gợi ý.",
       autoScheduleError: "Đã lưu gợi ý, nhưng chưa làm mới được lịch.",
-      loadProjectError: "Không tải được dự án.",
-      updateProjectError: "Không cập nhật được dự án.",
-      deleteProjectError: "Không xóa được dự án.",
-      deleteProjectTitle: "Xóa dự án?",
+      loadProjectError: "Không tải được mục tiêu.",
+      updateProjectError: "Không cập nhật được mục tiêu.",
+      deleteProjectError: "Không xóa được mục tiêu.",
+      deleteProjectTitle: "Xóa mục tiêu?",
       deleteProjectWarning: "Thao tác này không thể hoàn tác.",
       deleteProjectDescription:
-        "Dự án, toàn bộ nhiệm vụ, các bước thực hiện và dữ liệu lịch sẽ bị xóa vĩnh viễn.",
+        "Mục tiêu, toàn bộ nhiệm vụ, các bước thực hiện và dữ liệu lịch sẽ bị xóa vĩnh viễn.",
       deletingProject: "Đang xóa...",
       createTaskError: "Không tạo được nhiệm vụ.",
       updateTaskError: "Không cập nhật được nhiệm vụ.",
@@ -835,7 +806,6 @@ export const appText = {
     auth: {
       loginSubtitle: "Đăng nhập vào khu vực làm việc của bạn.",
       email: "Email",
-      loginIdentifier: "Tên đăng nhập hoặc email",
       username: "Tên đăng nhập",
       usernameHint: "Dùng 3-30 chữ thường, chữ số hoặc dấu gạch dưới.",
       password: "Mật khẩu",
@@ -843,7 +813,7 @@ export const appText = {
       needAccount: "Chưa có tài khoản?",
       register: "Đăng ký",
       createAccount: "Tạo tài khoản",
-      registerSubtitle: "Bắt đầu lập kế hoạch dự án với nhiệm vụ và các bước thực hiện.",
+      registerSubtitle: "Biến mục tiêu thành nhiệm vụ và các bước thực hiện rõ ràng.",
       name: "Tên",
       confirmPassword: "Xác nhận mật khẩu",
       otp: "Mã xác thực email",

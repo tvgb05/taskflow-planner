@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "TaskFlow Planner",
-  description: "Fullstack project planning and scheduling app.",
+  description: "AI-assisted goal planning and scheduling app.",
 };
 
 export default function RootLayout({

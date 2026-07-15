@@ -11,12 +11,14 @@ class Subtask extends Model
     use HasFactory;
 
     public const STATUS_TODO = 'todo';
+
     public const STATUS_DONE = 'done';
 
     protected $fillable = [
         'task_id',
         'title',
         'description',
+        'resources',
         'status',
         'estimated_minutes',
         'scheduled_date',
@@ -27,6 +29,7 @@ class Subtask extends Model
         return [
             'estimated_minutes' => 'integer',
             'scheduled_date' => 'date',
+            'resources' => 'array',
         ];
     }
 

@@ -19,7 +19,7 @@ import {
 import type { User } from "@/lib/types";
 
 type LoginInput = {
-  identifier: string;
+  email: string;
   password: string;
 };
 
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await initializeCsrf();
     const payload = await apiRequest<AuthResponse>("/login", {
       method: "POST",
-      body: { ...input, email: input.identifier },
+      body: input,
     });
 
     setUser(authUser(payload));

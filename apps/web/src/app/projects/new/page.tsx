@@ -31,7 +31,12 @@ import {
 } from "@/lib/guide";
 import { useAppText } from "@/lib/i18n";
 import { usePreferences } from "@/lib/preferences";
-import type { Project, ProjectType, ValidationErrors } from "@/lib/types";
+import type {
+  PlanningMode,
+  Project,
+  ProjectType,
+  ValidationErrors,
+} from "@/lib/types";
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -41,6 +46,8 @@ export default function NewProjectPage() {
   const [icon, setIcon] = useState<ProjectIconKey>(defaultProjectIcon);
   const [projectType, setProjectType] =
     useState<ProjectType>("short_term");
+  const [planningMode, setPlanningMode] =
+    useState<PlanningMode>("phased");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
   const [availableMinutes, setAvailableMinutes] = useState("120");
@@ -85,6 +92,7 @@ export default function NewProjectPage() {
           description: description || null,
           icon,
           project_type: projectType,
+          planning_mode: planningMode,
           deadline,
           available_minutes_per_day: Number(availableMinutes),
         },
@@ -154,9 +162,13 @@ export default function NewProjectPage() {
               <Select
                 label={t.project.projectType}
                 value={projectType}
-                onChange={(event) =>
-                  setProjectType(event.target.value as ProjectType)
-                }
+                onChange={(event) => {
+                  const nextType = event.target.value as ProjectType;
+                  setProjectType(nextType);
+                  if (nextType === "daily_recurring") {
+                    setPlanningMode("recurring");
+                  }
+                }}
                 required
               >
                 <option value="short_term">{t.project.shortTerm}</option>
@@ -165,14 +177,30 @@ export default function NewProjectPage() {
                   {t.project.dailyRecurring}
                 </option>
               </Select>
+              <Select
+                label={t.project.planMode}
+                value={planningMode}
+                onChange={(event) =>
+                  setPlanningMode(event.target.value as PlanningMode)
+                }
+                required
+              >
+                <option value="phased">{t.project.phasedPlan}</option>
+                <option value="recurring">{t.project.recurringPlan}</option>
+                <option value="pipeline">{t.project.pipelinePlan}</option>
+              </Select>
               <div data-guide="new-project-description">
                 <Textarea
                   label={t.newProject.descriptionLabel}
                   name="description"
                   value={description}
                   placeholder={t.newProject.descriptionPlaceholder}
+                  rows={8}
                   onChange={(event) => setDescription(event.target.value)}
                 />
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  {t.newProject.descriptionHint}
+                </p>
               </div>
               <div
                 data-guide="new-project-timing"

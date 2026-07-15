@@ -25,6 +25,7 @@ class ProjectResource extends JsonResource
             'description' => $this->description,
             'icon' => $this->icon ?? 'folder',
             'project_type' => $this->project_type ?? 'short_term',
+            'planning_mode' => $this->planning_mode ?? 'phased',
             'deadline' => $this->deadline?->toDateString(),
             'available_minutes_per_day' => $this->available_minutes_per_day,
             'tasks_count' => $tasksCount,

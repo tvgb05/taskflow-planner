@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, MousePointerClick } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getAppText, useAppText } from "@/lib/i18n";
@@ -36,9 +36,7 @@ const projectGuideTargets = [
 ];
 
 const aiSuggestGuideTargets = [
-  "[data-guide='ai-goal']",
-  "[data-guide='ai-profile-style']",
-  "[data-guide='ai-plan-mode']",
+  "[data-guide='ai-style']",
   "[data-guide='ai-work-limits']",
   "[data-guide='ai-generate']",
 ];
@@ -207,7 +205,7 @@ export function GuideOverlay({
     <div className="pointer-events-none fixed inset-0 z-50">
       {rect ? (
         <div
-          className="absolute rounded-md border-2 border-cyan-500 shadow-[0_0_0_3px_rgba(6,182,212,0.18)] transition-all"
+          className="absolute animate-pulse rounded-md border-2 border-cyan-500 shadow-[0_0_0_5px_rgba(6,182,212,0.22)] transition-all"
           style={{
             top: rect.top - 4,
             left: rect.left - 4,
@@ -245,6 +243,11 @@ export function GuideOverlay({
 
         <p className="mt-2 text-sm leading-6 text-cyan-50">
           {step.description}
+        </p>
+
+        <p className="mt-3 flex items-center gap-2 rounded border border-cyan-400/50 bg-cyan-800 px-3 py-2 text-xs font-medium text-white">
+          <MousePointerClick className="h-4 w-4 shrink-0" />
+          {t.guide.highlightHint}
         </p>
 
         {step.details?.length ? (
