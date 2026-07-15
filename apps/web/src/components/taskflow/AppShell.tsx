@@ -144,6 +144,7 @@ export function AppShell({
 function SettingsMenu() {
   const [open, setOpen] = useState(false);
   const [profileName, setProfileName] = useState("");
+  const [profileUsername, setProfileUsername] = useState("");
   const [profileEmail, setProfileEmail] = useState("");
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -183,6 +184,7 @@ function SettingsMenu() {
   function openMenu() {
     if (!open && user) {
       setProfileName(user.name);
+      setProfileUsername(user.username ?? "");
       setProfileEmail(user.email);
       setProfileMessage(null);
       setProfileError(null);
@@ -201,10 +203,12 @@ function SettingsMenu() {
     try {
       const payload = await updateProfile({
         name: profileName.trim(),
+        username: profileUsername.trim(),
         email: profileEmail.trim(),
       });
 
       setProfileName(payload.user.name);
+      setProfileUsername(payload.user.username);
       setProfileEmail(payload.user.email);
       setProfileMessage(
         payload.verification_email_sent === true
@@ -309,6 +313,20 @@ function SettingsMenu() {
                 label={t.appShell.name}
                 value={profileName}
                 onChange={(event) => setProfileName(event.target.value)}
+                disabled={profileBusy}
+                required
+              />
+              <Input
+                label={t.auth.username}
+                value={profileUsername}
+                onChange={(event) =>
+                  setProfileUsername(
+                    event.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
+                  )
+                }
+                minLength={3}
+                maxLength={30}
+                hint={t.auth.usernameHint}
                 disabled={profileBusy}
                 required
               />

@@ -5,11 +5,13 @@ import { cn } from "@/lib/utils";
 type FieldProps = {
   label: string;
   error?: string;
+  hint?: string;
 };
 
 export function Input({
   label,
   error,
+  hint,
   className,
   id,
   ...props
@@ -28,6 +30,11 @@ export function Input({
         )}
         {...props}
       />
+      {hint && !error ? (
+        <span className="text-xs font-normal leading-5 text-slate-500">
+          {hint}
+        </span>
+      ) : null}
       {error ? <span className="text-xs text-rose-600">{error}</span> : null}
     </label>
   );

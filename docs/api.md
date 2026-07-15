@@ -20,10 +20,10 @@ Browser requests include credentials and send `X-XSRF-TOKEN` for state-changing 
 | --- | --- | --- |
 | POST | `/register` | Creates a verified user from a valid OTP and starts a session. |
 | POST | `/register/otp` | Verifies reCAPTCHA and sends a six-digit OTP through Nodemailer and Gmail. |
-| POST | `/login` | Returns a Sanctum token. |
-| POST | `/logout` | Deletes the current access token. |
+| POST | `/login` | Starts a session using a username or email. |
+| POST | `/logout` | Ends the current session. |
 | GET | `/me` | Returns the current user. |
-| PUT | `/me` | Updates the current user's name/email. |
+| PUT | `/me` | Updates the current user's name, username, or email. |
 | POST | `/email/verification-notification` | Sends a verification OTP through Nodemailer and Gmail. |
 | POST | `/email/verify-otp` | Verifies the authenticated user's email with a six-digit OTP. |
 
@@ -32,12 +32,25 @@ Register body:
 ```json
 {
   "name": "Demo User",
+  "username": "demo_user",
   "email": "demo@example.com",
   "password": "password123",
   "password_confirmation": "password123",
   "otp": "123456"
 }
 ```
+
+Login body:
+
+```json
+{
+  "identifier": "demo_user",
+  "password": "password123"
+}
+```
+
+`identifier` accepts either the username or email address. Usernames contain
+3-30 lowercase letters, numbers, or underscores.
 
 ## Projects
 

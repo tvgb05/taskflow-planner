@@ -11,6 +11,7 @@ use App\Services\RecaptchaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -18,8 +19,20 @@ class AuthController extends Controller
 {
     public function register(Request $request, EmailOtpService $otpService): JsonResponse
     {
+        $request->merge([
+            'username' => $this->registrationUsername($request),
+            'email' => Str::lower(trim((string) $request->input('email'))),
+        ]);
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'username' => [
+                'required',
+                'string',
+                'min:3',
+                'max:30',
+                'regex:/^[a-z0-9_]+$/',
+                'unique:users,username',
+            ],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'otp' => ['required', 'string', 'digits:6'],
@@ -29,7 +42,7 @@ class AuthController extends Controller
         unset($validated['otp']);
         $validated['email_verified_at'] = now();
         $user = User::create($validated);
-        auth()->login($user);
+        auth()->guard('web')->login($user);
         $request->session()->regenerate();
 
         return response()->json([
@@ -57,20 +70,26 @@ class AuthController extends Controller
 
     public function login(Request $request): JsonResponse
     {
+        $identifier = trim((string) ($request->input('identifier') ?? $request->input('email')));
+        $request->merge(['identifier' => $identifier]);
         $validated = $request->validate([
-            'email' => ['required', 'email'],
+            'identifier' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        $normalizedIdentifier = Str::lower($validated['identifier']);
+        $user = User::query()
+            ->whereRaw('LOWER(email) = ?', [$normalizedIdentifier])
+            ->orWhereRaw('LOWER(username) = ?', [$normalizedIdentifier])
+            ->first();
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+                'identifier' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        auth()->login($user);
+        auth()->guard('web')->login($user);
         $request->session()->regenerate();
 
         return response()->json([
@@ -98,8 +117,20 @@ class AuthController extends Controller
     public function updateMe(Request $request, EmailOtpService $otpService): JsonResponse
     {
         $user = $request->user();
+        $request->merge([
+            'username' => Str::lower(trim((string) ($request->input('username') ?? $user->username))),
+            'email' => Str::lower(trim((string) $request->input('email'))),
+        ]);
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'username' => [
+                'required',
+                'string',
+                'min:3',
+                'max:30',
+                'regex:/^[a-z0-9_]+$/',
+                Rule::unique('users', 'username')->ignore($user->id),
+            ],
             'email' => [
                 'required',
                 'email',
@@ -174,5 +205,28 @@ class AuthController extends Controller
             'message' => 'Email verified successfully.',
             'user' => new UserResource($user->refresh()),
         ]);
+    }
+
+    private function registrationUsername(Request $request): string
+    {
+        $provided = Str::lower(trim((string) $request->input('username')));
+
+        if ($provided !== '') {
+            return $provided;
+        }
+
+        $localPart = Str::before((string) $request->input('email'), '@');
+        $base = Str::lower(Str::ascii($localPart));
+        $base = trim((string) preg_replace('/[^a-z0-9_]+/', '_', $base), '_');
+        $base = strlen($base) >= 3 ? substr($base, 0, 30) : 'user';
+        $candidate = $base;
+        $suffix = 1;
+
+        while (User::where('username', $candidate)->exists()) {
+            $ending = '_'.($suffix++);
+            $candidate = substr($base, 0, 30 - strlen($ending)).$ending;
+        }
+
+        return $candidate;
     }
 }

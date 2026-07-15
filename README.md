@@ -11,7 +11,7 @@ TaskFlow Planner is a small fullstack web application for breaking large goals i
 
 ## Features
 
-- Register, login, logout, and cookie-authenticated current user endpoint
+- Register with a unique username, login by username or email, logout, and use a cookie-authenticated current user endpoint
 - Project CRUD with deadline and available minutes per day
 - Task CRUD with status, priority, deadline, filters, and estimates
 - Subtask CRUD with done state and scheduled date

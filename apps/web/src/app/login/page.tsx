@@ -18,7 +18,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { booting, authenticated, login } = useAuth();
   const t = useAppText();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [errors, setErrors] = useState<ValidationErrors | undefined>();
@@ -37,7 +37,7 @@ export default function LoginPage() {
     setErrors(undefined);
 
     try {
-      await login({ email, password });
+      await login({ identifier, password });
       router.replace("/dashboard");
     } catch (error) {
       if (error instanceof ApiRequestError) {
@@ -64,12 +64,11 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="grid gap-4">
             <ErrorMessage message={message} errors={errors} />
             <Input
-              label={t.auth.email}
-              name="email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              autoComplete="email"
+              label={t.auth.loginIdentifier}
+              name="identifier"
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
+              autoComplete="username"
               required
             />
             <Input

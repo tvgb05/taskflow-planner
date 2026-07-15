@@ -21,6 +21,7 @@ export default function RegisterPage() {
   const { booting, authenticated, register, sendRegistrationOtp } = useAuth();
   const t = useAppText();
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
@@ -58,6 +59,7 @@ export default function RegisterPage() {
     try {
       await register({
         name,
+        username,
         email,
         password,
         password_confirmation: passwordConfirmation,
@@ -117,6 +119,21 @@ export default function RegisterPage() {
               value={name}
               onChange={(event) => setName(event.target.value)}
               autoComplete="name"
+              required
+            />
+            <Input
+              label={t.auth.username}
+              name="username"
+              value={username}
+              onChange={(event) =>
+                setUsername(
+                  event.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
+                )
+              }
+              autoComplete="username"
+              minLength={3}
+              maxLength={30}
+              hint={t.auth.usernameHint}
               required
             />
             <Input

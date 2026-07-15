@@ -241,7 +241,54 @@ class PlanningWorkflowTest extends TestCase
         ]);
 
         $response->assertCreated()->assertJsonMissingPath('token');
-        $this->getJson('/api/me')->assertSuccessful()->assertJsonPath('data.email', 'public@example.com');
+        $this->getJson('/api/me')
+            ->assertSuccessful()
+            ->assertJsonPath('data.email', 'public@example.com')
+            ->assertJsonPath('data.username', 'public');
+    }
+
+    public function test_a_user_can_login_with_either_email_or_username(): void
+    {
+        $user = User::factory()->create([
+            'username' => 'morning_planner',
+            'email' => 'planner@example.com',
+            'password' => 'password123',
+        ]);
+        $this->withHeader('Origin', 'http://localhost:3000');
+
+        $this->postJson('/api/login', [
+            'identifier' => 'planner@example.com',
+            'password' => 'password123',
+        ])->assertOk()->assertJsonPath('user.id', $user->id);
+
+        $this->postJson('/api/logout')->assertOk();
+
+        $this->postJson('/api/login', [
+            'identifier' => 'MORNING_PLANNER',
+            'password' => 'password123',
+        ])->assertOk()->assertJsonPath('user.id', $user->id);
+
+        $this->postJson('/api/logout')->assertOk();
+
+        $this->postJson('/api/login', [
+            'email' => 'planner@example.com',
+            'password' => 'password123',
+        ])->assertOk()->assertJsonPath('user.id', $user->id);
+    }
+
+    public function test_a_user_cannot_change_to_an_existing_username(): void
+    {
+        $user = User::factory()->create(['username' => 'first_user']);
+        User::factory()->create(['username' => 'taken_name']);
+        Sanctum::actingAs($user);
+
+        $this->putJson('/api/me', [
+            'name' => $user->name,
+            'username' => 'taken_name',
+            'email' => $user->email,
+        ])->assertUnprocessable()->assertJsonValidationErrors('username');
+
+        $this->assertSame('first_user', $user->refresh()->username);
     }
 
     public function test_registration_otp_is_sent_through_nodemailer(): void
