@@ -242,7 +242,7 @@ export const appText = {
           description:
             "Create a draft and review every task before adding it to the project.",
           details: [
-            "Use Revise with AI on any task that is unclear or unsuitable.",
+            "Regenerate any unclear task or subtask and explain what should improve. Your feedback is remembered for future suggestions in this project.",
             "Save suggestions only after deadlines, descriptions, and scheduled steps look right.",
           ],
         },
@@ -340,12 +340,20 @@ export const appText = {
       goal: "Goal",
       generateSuggestions: "Generate suggestions",
       saveSuggestions: "Save suggestions",
-      repromptTask: "Revise with AI",
+      repromptTask: "Regenerate task",
+      repromptSubtask: "Regenerate subtask",
+      repromptTaskDialogTitle: "Regenerate this task",
+      repromptSubtaskDialogTitle: "Regenerate this subtask",
+      repromptMemoryNotice:
+        "Your feedback is saved to this project's AI memory and will guide future suggestions.",
       repromptLabel: "What should change?",
       repromptPlaceholder:
         "Example: Make this task more practical, reduce the scope, and add clearer setup steps.",
+      repromptSubtaskPlaceholder:
+        "Example: This step is too vague. Name the tool, exact action, expected result, and how to verify it.",
       applyReprompt: "Generate replacement",
       repromptError: "Unable to revise this task.",
+      repromptSubtaskError: "Unable to revise this subtask.",
       aiGeneratedDescription: "AI-generated suggestion awaiting review.",
       noTaskDeadline: "No task deadline",
       noSubtasksYet: "No subtasks yet.",
@@ -650,7 +658,7 @@ export const appText = {
           description:
             "Tạo bản nháp và kiểm tra từng nhiệm vụ trước khi thêm vào dự án.",
           details: [
-            "Dùng nút Nhờ trợ lý sửa với nhiệm vụ chưa rõ hoặc chưa phù hợp.",
+            "Tạo lại nhiệm vụ hoặc bước thực hiện chưa phù hợp và nêu rõ điều cần cải thiện. Phản hồi sẽ được ghi nhớ cho các gợi ý sau trong dự án này.",
             "Chỉ lưu khi hạn chót, nội dung và ngày làm của các bước đã hợp lý.",
           ],
         },
@@ -748,12 +756,20 @@ export const appText = {
       goal: "Mục tiêu",
       generateSuggestions: "Tạo gợi ý",
       saveSuggestions: "Lưu gợi ý",
-      repromptTask: "Nhờ trợ lý sửa",
+      repromptTask: "Tạo lại nhiệm vụ",
+      repromptSubtask: "Tạo lại bước thực hiện",
+      repromptTaskDialogTitle: "Tạo lại nhiệm vụ này",
+      repromptSubtaskDialogTitle: "Tạo lại bước thực hiện này",
+      repromptMemoryNotice:
+        "Phản hồi này được lưu vào bộ nhớ trợ lý của dự án và sẽ định hướng các gợi ý sau.",
       repromptLabel: "Bạn muốn thay đổi điều gì?",
       repromptPlaceholder:
         "Ví dụ: Làm nhiệm vụ này thực tế hơn, giảm phạm vi và thêm các bước chuẩn bị rõ ràng.",
-      applyReprompt: "Tạo nhiệm vụ thay thế",
+      repromptSubtaskPlaceholder:
+        "Ví dụ: Bước này còn chung chung; hãy nêu công cụ, thao tác cụ thể, kết quả cần có và cách kiểm tra.",
+      applyReprompt: "Tạo nội dung thay thế",
       repromptError: "Không thể tạo lại nhiệm vụ này.",
+      repromptSubtaskError: "Không thể tạo lại bước thực hiện này.",
       aiGeneratedDescription: "Gợi ý do trợ lý tạo, đang chờ bạn xem lại.",
       noTaskDeadline: "Nhiệm vụ chưa có hạn chót",
       noSubtasksYet: "Chưa có bước thực hiện.",

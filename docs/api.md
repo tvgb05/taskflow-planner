@@ -149,7 +149,9 @@ Request:
 }
 ```
 
-`plan_mode` can be `phased` (deadline-based milestones), `recurring` (a detailed weekly template repeated when saved), or `pipeline` (only the next day, with the latest feedback given highest priority). Pipeline accepts optional `feedback`.
+`plan_mode` can be `phased` (deadline-based milestones), `recurring` (a detailed weekly template repeated when saved), or `pipeline` (only the next day). Optional `feedback` and regeneration feedback are stored as project-specific AI memory. The ten most recent entries are included in future prompts, with newer entries taking precedence when preferences conflict.
+
+To regenerate one draft task, send that task as `current_task` with `reprompt_feedback`. To regenerate only one draft subtask, also send it as `current_subtask`. The response contains one task; for subtask regeneration, that task contains exactly one replacement subtask.
 
 Response:
 

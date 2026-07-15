@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Project;
+use App\Models\ProjectPlanningFeedback;
 use App\Models\RegistrationOtpCode;
 use App\Models\Subtask;
 use App\Models\Task;
@@ -152,10 +153,120 @@ class PlanningWorkflowTest extends TestCase
             ->assertJsonCount(1, 'tasks')
             ->assertJsonPath('tasks.0.title', 'Set up the development environment safely')
             ->assertJsonPath('tasks.0.phase', 'Phase 1: Foundation');
+        $this->assertDatabaseHas('project_planning_feedback', [
+            'project_id' => $project->id,
+            'user_id' => $user->id,
+            'kind' => 'regeneration',
+            'target_type' => 'task',
+            'target_title' => 'Set up environment',
+            'content' => 'Make the setup steps safer and easier to verify.',
+        ]);
         Http::assertSent(fn ($request) => str_contains(
             (string) data_get($request->data(), 'contents.0.parts.0.text'),
             'Make the setup steps safer and easier to verify.',
         ));
+    }
+
+    public function test_a_single_ai_draft_subtask_can_be_regenerated_with_remembered_feedback(): void
+    {
+        Carbon::setTestNow('2026-07-15 09:00:00');
+        config()->set('services.gemini.key', 'gemini-test-key');
+        config()->set('services.gemini.model', 'gemini-test-model');
+        $user = User::factory()->create();
+        $project = Project::factory()->for($user)->create([
+            'deadline' => '2026-07-17',
+            'available_minutes_per_day' => 120,
+        ]);
+        ProjectPlanningFeedback::create([
+            'project_id' => $project->id,
+            'user_id' => $user->id,
+            'content' => 'Prefer steps with a clear verification command.',
+            'kind' => 'daily',
+            'for_date' => '2026-07-15',
+        ]);
+        Sanctum::actingAs($user);
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([
+                'candidates' => [[
+                    'content' => [
+                        'parts' => [[
+                            'text' => json_encode(['tasks' => [[
+                                'title' => 'Set up the application',
+                                'phase' => 'Foundation',
+                                'description' => 'Parent task response wrapper.',
+                                'deadline' => '2026-07-16',
+                                'estimated_minutes' => 45,
+                                'priority' => 'high',
+                                'subtasks' => [[
+                                    'title' => 'Configure and verify the database connection',
+                                    'description' => 'Set the database variables, run migrations, and verify the connection with the framework status command.',
+                                    'estimated_minutes' => 45,
+                                    'scheduled_date' => '2026-07-15',
+                                ]],
+                            ]]]),
+                        ]],
+                    ],
+                ]],
+            ]),
+        ]);
+
+        $currentTask = [
+            'title' => 'Set up the application',
+            'phase' => 'Foundation',
+            'description' => 'Install and configure the development environment.',
+            'deadline' => '2026-07-16',
+            'estimated_minutes' => 90,
+            'priority' => 'high',
+            'repeat_weekly' => false,
+            'subtasks' => [[
+                'title' => 'Configure the database',
+                'description' => 'Set database variables.',
+                'estimated_minutes' => 45,
+                'scheduled_date' => '2026-07-15',
+            ], [
+                'title' => 'Start the applications',
+                'description' => 'Start both development servers.',
+                'estimated_minutes' => 45,
+                'scheduled_date' => '2026-07-16',
+            ]],
+        ];
+        $currentSubtask = $currentTask['subtasks'][0];
+
+        $response = $this->postJson("/api/projects/{$project->id}/ai-breakdown", [
+            'goal' => 'Build a Laravel and React planner',
+            'deadline' => '2026-07-17',
+            'available_minutes_per_day' => 120,
+            'language' => 'en',
+            'plan_mode' => 'phased',
+            'create_subtasks' => true,
+            'min_tasks' => 1,
+            'max_tasks' => 1,
+            'min_subtasks' => 1,
+            'max_subtasks' => 1,
+            'reprompt_feedback' => 'Include the exact verification command and expected result.',
+            'current_task' => $currentTask,
+            'current_subtask' => $currentSubtask,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'tasks')
+            ->assertJsonCount(1, 'tasks.0.subtasks')
+            ->assertJsonPath('tasks.0.subtasks.0.title', 'Configure and verify the database connection');
+        $this->assertDatabaseHas('project_planning_feedback', [
+            'project_id' => $project->id,
+            'user_id' => $user->id,
+            'kind' => 'regeneration',
+            'target_type' => 'subtask',
+            'target_title' => 'Configure the database',
+            'content' => 'Include the exact verification command and expected result.',
+        ]);
+        Http::assertSent(function ($request): bool {
+            $prompt = (string) data_get($request->data(), 'contents.0.parts.0.text');
+
+            return str_contains($prompt, 'Focused subtask revision request:')
+                && str_contains($prompt, 'Prefer steps with a clear verification command.')
+                && str_contains($prompt, 'Include the exact verification command and expected result.');
+        });
     }
 
     public function test_completing_a_task_completes_its_subtasks(): void

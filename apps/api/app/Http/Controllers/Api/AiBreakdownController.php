@@ -24,6 +24,7 @@ class AiBreakdownController extends Controller
         $payload = $request->validated();
         $projectDeadline = $project->deadline?->toDateString();
         $currentTask = $payload['current_task'] ?? null;
+        $currentSubtask = $payload['current_subtask'] ?? null;
         $payload['deadline'] = is_array($currentTask)
             ? min($projectDeadline, $currentTask['deadline'])
             : $projectDeadline;
@@ -39,22 +40,14 @@ class AiBreakdownController extends Controller
             $payload['replacement_repeat_weekly'] = (bool) ($currentTask['repeat_weekly'] ?? false);
         }
 
-        if (($payload['plan_mode'] ?? 'phased') === 'pipeline') {
-            $feedback = trim((string) ($payload['feedback'] ?? ''));
-
-            if ($feedback !== '') {
-                ProjectPlanningFeedback::create([
-                    'project_id' => $project->id,
-                    'user_id' => $request->user()->id,
-                    'content' => $feedback,
-                    'for_date' => today()->addDay(),
-                ]);
-            }
-
-            $payload['feedback_context'] = $feedback !== ''
-                ? $feedback
-                : $project->planningFeedback()->latest()->value('content');
+        if (is_array($currentSubtask)) {
+            $payload['create_subtasks'] = true;
+            $payload['min_subtasks'] = 1;
+            $payload['max_subtasks'] = 1;
         }
+
+        $this->rememberFeedback($request, $project, $payload);
+        $payload['feedback_context'] = $this->feedbackContext($project);
 
         try {
             return response()->json($service->suggest($payload));
@@ -72,5 +65,84 @@ class AiBreakdownController extends Controller
             ->where('status', 'todo')
             ->when($scheduledDate, fn ($subtasks) => $subtasks->where('scheduled_date', $scheduledDate))
             ->sum(fn ($subtask): int => (int) ($subtask->estimated_minutes ?? 30));
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function rememberFeedback(AiBreakdownRequest $request, Project $project, array $payload): void
+    {
+        $dailyFeedback = trim((string) ($payload['feedback'] ?? ''));
+        if ($dailyFeedback !== '') {
+            $this->storeFeedback(
+                $project,
+                $request->user()->id,
+                $dailyFeedback,
+                'daily',
+                null,
+                null,
+                today()->addDay()->toDateString(),
+            );
+        }
+
+        $regenerationFeedback = trim((string) ($payload['reprompt_feedback'] ?? ''));
+        $currentTask = $payload['current_task'] ?? null;
+        $currentSubtask = $payload['current_subtask'] ?? null;
+        if ($regenerationFeedback === '' || ! is_array($currentTask)) {
+            return;
+        }
+
+        $targetType = is_array($currentSubtask) ? 'subtask' : 'task';
+        $targetTitle = is_array($currentSubtask)
+            ? (string) $currentSubtask['title']
+            : (string) $currentTask['title'];
+
+        $this->storeFeedback(
+            $project,
+            $request->user()->id,
+            $regenerationFeedback,
+            'regeneration',
+            $targetType,
+            $targetTitle,
+            today()->toDateString(),
+        );
+    }
+
+    private function storeFeedback(
+        Project $project,
+        int $userId,
+        string $content,
+        string $kind,
+        ?string $targetType,
+        ?string $targetTitle,
+        string $forDate,
+    ): void {
+        ProjectPlanningFeedback::firstOrCreate([
+            'project_id' => $project->id,
+            'user_id' => $userId,
+            'content' => $content,
+            'kind' => $kind,
+            'target_type' => $targetType,
+            'target_title' => $targetTitle,
+            'for_date' => $forDate,
+        ]);
+    }
+
+    private function feedbackContext(Project $project): string
+    {
+        return $project->planningFeedback()
+            ->latest()
+            ->limit(10)
+            ->get()
+            ->reverse()
+            ->values()
+            ->map(function (ProjectPlanningFeedback $feedback): string {
+                $target = $feedback->target_title
+                    ? " | {$feedback->target_type}: {$feedback->target_title}"
+                    : '';
+
+                return "- [{$feedback->for_date->toDateString()} | {$feedback->kind}{$target}] {$feedback->content}";
+            })
+            ->implode("\n");
     }
 }

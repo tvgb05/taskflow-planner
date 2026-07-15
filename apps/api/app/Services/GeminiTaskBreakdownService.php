@@ -264,7 +264,22 @@ class GeminiTaskBreakdownService
         $feedback = trim((string) ($payload['feedback_context'] ?? '')) ?: 'No user feedback has been recorded yet.';
         $repromptInstruction = '';
 
-        if (isset($payload['current_task'], $payload['reprompt_feedback'])) {
+        if (isset($payload['current_task'], $payload['current_subtask'], $payload['reprompt_feedback'])) {
+            $currentTask = json_encode($payload['current_task'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $currentSubtask = json_encode($payload['current_subtask'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $repromptFeedback = trim((string) $payload['reprompt_feedback']);
+            $repromptInstruction = <<<PROMPT
+
+Focused subtask revision request:
+- Replace exactly one existing draft subtask. Do not return alternatives or extra subtasks.
+- Return exactly one task containing exactly one replacement subtask. The task is only a response wrapper.
+- Preserve useful subtask details that the user did not ask to change.
+- Make the replacement a concrete execution step that fits its parent task and deadline.
+- Parent task context: {$currentTask}
+- Existing draft subtask: {$currentSubtask}
+- User-requested changes: {$repromptFeedback}
+PROMPT;
+        } elseif (isset($payload['current_task'], $payload['reprompt_feedback'])) {
             $currentTask = json_encode($payload['current_task'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             $repromptFeedback = trim((string) $payload['reprompt_feedback']);
             $repromptInstruction = <<<PROMPT
@@ -303,7 +318,8 @@ Language for all user-facing task and subtask text: {$language}
 Planning profile: {$profile}
 Style: {$style}
 Plan mode: {$planMode}. {$modeInstruction}
-Highest-priority user feedback for the next plan: {$feedback}
+Remembered project feedback (high-priority preferences; when entries conflict, follow the newer entry):
+{$feedback}
 Task count: return at least {$minTasks} and at most {$maxTasks} tasks.
 Subtask rule: {$subtaskInstruction}
 {$repromptInstruction}

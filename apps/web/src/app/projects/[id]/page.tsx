@@ -52,6 +52,7 @@ import { useAppText } from "@/lib/i18n";
 import { usePreferences } from "@/lib/preferences";
 import { formatDate, todayDateInputValue } from "@/lib/utils";
 import type {
+  AiSuggestedSubtask,
   AiSuggestion,
   Project,
   ScheduleDay,
@@ -99,6 +100,10 @@ type AiSettings = {
   minSubtasks: string;
   maxSubtasks: string;
 };
+
+type RepromptTarget =
+  | { type: "task"; suggestionIndex: number }
+  | { type: "subtask"; suggestionIndex: number; subtaskIndex: number };
 
 const emptyTaskForm: TaskForm = {
   title: "",
@@ -186,9 +191,11 @@ export default function ProjectDetailPage() {
   const [guideChecked, setGuideChecked] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [projectInfoExpanded, setProjectInfoExpanded] = useState(false);
-  const [repromptIndex, setRepromptIndex] = useState<number | null>(null);
+  const [repromptTarget, setRepromptTarget] = useState<RepromptTarget | null>(
+    null,
+  );
   const [repromptFeedback, setRepromptFeedback] = useState("");
-  const [repromptLoadingIndex, setRepromptLoadingIndex] = useState<number | null>(null);
+  const [repromptLoading, setRepromptLoading] = useState(false);
 
   const loadProject = useCallback(async () => {
     const payload = await apiRequest<Project | { data: Project }>(
@@ -628,21 +635,26 @@ export default function ProjectDetailPage() {
     }
   }
 
-  async function repromptAiSuggestion(
-    event: FormEvent<HTMLFormElement>,
-    suggestionIndex: number,
-  ) {
+  async function repromptAiSuggestion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!project || !repromptFeedback.trim()) {
+    if (!project || !repromptTarget || !repromptFeedback.trim()) {
       return;
     }
 
-    const suggestion = aiSuggestions[suggestionIndex];
+    const suggestion = aiSuggestions[repromptTarget.suggestionIndex];
     if (!suggestion) {
       return;
     }
 
-    setRepromptLoadingIndex(suggestionIndex);
+    const currentSubtask =
+      repromptTarget.type === "subtask"
+        ? suggestion.subtasks[repromptTarget.subtaskIndex]
+        : undefined;
+    if (repromptTarget.type === "subtask" && !currentSubtask) {
+      return;
+    }
+
+    setRepromptLoading(true);
     setAiMessage(null);
     const { minSubtasks, maxSubtasks } = normalizedAiCounts(aiSettings);
 
@@ -661,12 +673,16 @@ export default function ProjectDetailPage() {
             plan_mode: aiSettings.planMode,
             recurrence_cycles: boundedAiCount(aiSettings.recurrenceCycles, 4),
             feedback: aiSettings.feedback.trim() || null,
-            create_subtasks: aiSettings.createSubtasks,
+            create_subtasks:
+              repromptTarget.type === "subtask" || aiSettings.createSubtasks,
             min_tasks: 1,
             max_tasks: 1,
-            min_subtasks: minSubtasks,
-            max_subtasks: maxSubtasks,
+            min_subtasks:
+              repromptTarget.type === "subtask" ? 1 : minSubtasks,
+            max_subtasks:
+              repromptTarget.type === "subtask" ? 1 : maxSubtasks,
             current_task: suggestion,
+            current_subtask: currentSubtask,
             reprompt_feedback: repromptFeedback.trim(),
           },
         },
@@ -677,21 +693,57 @@ export default function ProjectDetailPage() {
         throw new Error("AI did not return a replacement task.");
       }
 
-      setAiSuggestions((current) =>
-        current.map((item, index) =>
-          index === suggestionIndex ? replacement : item,
-        ),
-      );
-      setRepromptIndex(null);
+      if (repromptTarget.type === "task") {
+        setAiSuggestions((current) =>
+          current.map((item, index) =>
+            index === repromptTarget.suggestionIndex ? replacement : item,
+          ),
+        );
+      } else {
+        const replacementSubtask = replacement.subtasks[0] as
+          | AiSuggestedSubtask
+          | undefined;
+
+        if (!replacementSubtask) {
+          throw new Error("AI did not return a replacement subtask.");
+        }
+
+        setAiSuggestions((current) =>
+          current.map((item, suggestionIndex) => {
+            if (suggestionIndex !== repromptTarget.suggestionIndex) {
+              return item;
+            }
+
+            const subtasks = item.subtasks.map((subtask, subtaskIndex) =>
+              subtaskIndex === repromptTarget.subtaskIndex
+                ? replacementSubtask
+                : subtask,
+            );
+
+            return {
+              ...item,
+              subtasks,
+              estimated_minutes: subtasks.reduce(
+                (total, subtask) => total + subtask.estimated_minutes,
+                0,
+              ),
+            };
+          }),
+        );
+      }
+
+      setRepromptTarget(null);
       setRepromptFeedback("");
     } catch (error) {
       setAiMessage(
         error instanceof ApiRequestError
           ? error.message
-          : t.project.repromptError,
+          : repromptTarget.type === "subtask"
+            ? t.project.repromptSubtaskError
+            : t.project.repromptError,
       );
     } finally {
-      setRepromptLoadingIndex(null);
+      setRepromptLoading(false);
     }
   }
 
@@ -1103,6 +1155,8 @@ export default function ProjectDetailPage() {
           title={t.project.aiBreakdown}
           onClose={() => {
             setAiGuideOpen(false);
+            setRepromptTarget(null);
+            setRepromptFeedback("");
             setAiOpen(false);
           }}
         >
@@ -1365,74 +1419,30 @@ export default function ProjectDetailPage() {
                         variant="secondary"
                         className="h-9 px-3"
                         onClick={() => {
-                          setRepromptIndex((current) =>
-                            current === suggestionIndex ? null : suggestionIndex,
-                          );
+                          setRepromptTarget({
+                            type: "task",
+                            suggestionIndex,
+                          });
                           setRepromptFeedback("");
                         }}
-                        disabled={repromptLoadingIndex !== null}
+                        disabled={repromptLoading}
                       >
                         <RefreshCw className="h-4 w-4" />
                         {t.project.repromptTask}
                       </Button>
                     </div>
                   </div>
-                  {repromptIndex === suggestionIndex ? (
-                    <form
-                      onSubmit={(event) =>
-                        repromptAiSuggestion(event, suggestionIndex)
-                      }
-                      className="grid gap-3 rounded-md border border-cyan-200 bg-cyan-50 p-3"
-                    >
-                      <Textarea
-                        label={t.project.repromptLabel}
-                        value={repromptFeedback}
-                        placeholder={t.project.repromptPlaceholder}
-                        onChange={(event) => setRepromptFeedback(event.target.value)}
-                        required
-                      />
-                      <div className="flex flex-wrap justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          onClick={() => {
-                            setRepromptIndex(null);
-                            setRepromptFeedback("");
-                          }}
-                          disabled={repromptLoadingIndex === suggestionIndex}
-                        >
-                          {t.common.cancel}
-                        </Button>
-                        <Button
-                          type="submit"
-                          disabled={
-                            repromptLoadingIndex === suggestionIndex ||
-                            !repromptFeedback.trim()
-                          }
-                        >
-                          <RefreshCw
-                            className={
-                              repromptLoadingIndex === suggestionIndex
-                                ? "h-4 w-4 animate-spin"
-                                : "h-4 w-4"
-                            }
-                          />
-                          {t.project.applyReprompt}
-                        </Button>
-                      </div>
-                    </form>
-                  ) : null}
                   {suggestion.subtasks.length > 0 ? (
                     <ol className="grid gap-2 border-t border-slate-100 pt-3">
                       {suggestion.subtasks.map((subtask, index) => (
                         <li
                           key={`${suggestion.title}-${subtask.title}-${index}`}
-                          className="flex gap-3 text-sm text-slate-700"
+                          className="flex items-start gap-3 text-sm text-slate-700"
                         >
                           <span className="grid h-6 w-6 shrink-0 place-items-center rounded border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500">
                             {index + 1}
                           </span>
-                          <div className="leading-6">
+                          <div className="min-w-0 flex-1 leading-6">
                             <p className="font-medium text-slate-800">
                               {subtask.title}
                             </p>
@@ -1448,6 +1458,24 @@ export default function ProjectDetailPage() {
                               )}
                             </p>
                           </div>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="h-9 w-9 shrink-0 px-0"
+                            aria-label={t.project.repromptSubtask}
+                            title={t.project.repromptSubtask}
+                            onClick={() => {
+                              setRepromptTarget({
+                                type: "subtask",
+                                suggestionIndex,
+                                subtaskIndex: index,
+                              });
+                              setRepromptFeedback("");
+                            }}
+                            disabled={repromptLoading}
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
                         </li>
                       ))}
                     </ol>
@@ -1458,13 +1486,68 @@ export default function ProjectDetailPage() {
                 type="button"
                 className="w-fit"
                 onClick={saveAiSuggestions}
-                disabled={aiLoading || repromptLoadingIndex !== null}
+                disabled={aiLoading || repromptLoading}
               >
                 <Save className="h-4 w-4" />
                 {t.project.saveSuggestions}
               </Button>
             </div>
           ) : null}
+        </Modal>
+        <Modal
+          open={repromptTarget !== null}
+          title={
+            repromptTarget?.type === "subtask"
+              ? t.project.repromptSubtaskDialogTitle
+              : t.project.repromptTaskDialogTitle
+          }
+          onClose={() => {
+            if (!repromptLoading) {
+              setRepromptTarget(null);
+              setRepromptFeedback("");
+            }
+          }}
+        >
+          <form onSubmit={repromptAiSuggestion} className="grid gap-4">
+            <p className="rounded-md border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm leading-6 text-cyan-950">
+              {t.project.repromptMemoryNotice}
+            </p>
+            <Textarea
+              label={t.project.repromptLabel}
+              value={repromptFeedback}
+              placeholder={
+                repromptTarget?.type === "subtask"
+                  ? t.project.repromptSubtaskPlaceholder
+                  : t.project.repromptPlaceholder
+              }
+              onChange={(event) => setRepromptFeedback(event.target.value)}
+              required
+            />
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setRepromptTarget(null);
+                  setRepromptFeedback("");
+                }}
+                disabled={repromptLoading}
+              >
+                {t.common.cancel}
+              </Button>
+              <Button
+                type="submit"
+                disabled={repromptLoading || !repromptFeedback.trim()}
+              >
+                <RefreshCw
+                  className={
+                    repromptLoading ? "h-4 w-4 animate-spin" : "h-4 w-4"
+                  }
+                />
+                {t.project.applyReprompt}
+              </Button>
+            </div>
+          </form>
         </Modal>
         {guideOpen ? (
           <GuideOverlay

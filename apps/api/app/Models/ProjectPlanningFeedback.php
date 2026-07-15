@@ -10,7 +10,15 @@ class ProjectPlanningFeedback extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['project_id', 'user_id', 'content', 'for_date'];
+    protected $fillable = [
+        'project_id',
+        'user_id',
+        'content',
+        'kind',
+        'target_type',
+        'target_title',
+        'for_date',
+    ];
 
     protected function casts(): array
     {

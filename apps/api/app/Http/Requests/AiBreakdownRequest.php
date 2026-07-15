@@ -48,6 +48,11 @@ class AiBreakdownRequest extends FormRequest
             'current_task.subtasks.*.description' => ['required', 'string', 'max:800'],
             'current_task.subtasks.*.estimated_minutes' => ['required', 'integer', 'min:5', 'max:720'],
             'current_task.subtasks.*.scheduled_date' => ['required', 'date'],
+            'current_subtask' => ['sometimes', 'required_with:current_task,reprompt_feedback', 'array'],
+            'current_subtask.title' => ['required_with:current_subtask', 'string', 'max:255'],
+            'current_subtask.description' => ['required_with:current_subtask', 'string', 'max:800'],
+            'current_subtask.estimated_minutes' => ['required_with:current_subtask', 'integer', 'min:5', 'max:720'],
+            'current_subtask.scheduled_date' => ['required_with:current_subtask', 'date'],
         ];
     }
 }
