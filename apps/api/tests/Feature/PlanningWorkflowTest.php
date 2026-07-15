@@ -8,6 +8,7 @@ use App\Models\RegistrationOtpCode;
 use App\Models\Subtask;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\GeminiTaskBreakdownService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -395,6 +396,75 @@ class PlanningWorkflowTest extends TestCase
         $this->assertStringNotContainsString('AI-generated task that must not become a style example', $learningPrompt);
         $this->assertStringNotContainsString($manualTask->title, $disabledPrompt);
         $this->assertStringContainsString('task-format learning is disabled', $disabledPrompt);
+    }
+
+    public function test_gemini_uses_the_fallback_model_when_the_primary_model_is_overloaded(): void
+    {
+        Carbon::setTestNow('2026-07-15 09:00:00');
+        config()->set('services.gemini.key', 'gemini-test-key');
+        config()->set('services.gemini.model', 'gemini-primary-model');
+        config()->set('services.gemini.fallback_model', 'gemini-fallback-model');
+        config()->set('services.gemini.retry_attempts', 2);
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::sequence()
+                ->push([
+                    'error' => ['message' => 'The model is currently experiencing high demand.'],
+                ], 503)
+                ->push([
+                    'error' => ['message' => 'The model is currently experiencing high demand.'],
+                ], 503)
+                ->push([
+                    'candidates' => [[
+                        'content' => [
+                            'parts' => [[
+                                'text' => json_encode(['tasks' => [[
+                                    'title' => 'Prepare the crochet materials',
+                                    'phase' => 'Preparation',
+                                    'description' => 'Choose beginner-friendly yarn and a matching hook, then verify the gauge.',
+                                    'resources' => [],
+                                    'deadline' => '2026-07-16',
+                                    'estimated_minutes' => 30,
+                                    'priority' => 'high',
+                                    'subtasks' => [[
+                                        'title' => 'Choose yarn and hook',
+                                        'description' => 'Select medium yarn and the recommended hook size, then make a small test chain.',
+                                        'resources' => [],
+                                        'estimated_minutes' => 30,
+                                        'scheduled_date' => '2026-07-15',
+                                    ]],
+                                ]]]),
+                            ]],
+                        ],
+                    ]],
+                ]),
+        ]);
+
+        $result = app(GeminiTaskBreakdownService::class)->suggest([
+            'goal' => 'Crochet a simple tote bag for a beginner.',
+            'deadline' => '2026-07-16',
+            'available_minutes_per_day' => 60,
+            'language' => 'en',
+            'plan_mode' => 'phased',
+            'create_subtasks' => true,
+            'min_tasks' => 1,
+            'max_tasks' => 1,
+            'min_subtasks' => 1,
+            'max_subtasks' => 1,
+        ]);
+
+        $this->assertSame('Prepare the crochet materials', $result['tasks'][0]['title']);
+        $recorded = Http::recorded();
+        $this->assertCount(3, $recorded);
+        $this->assertStringContainsString(
+            '/models/gemini-fallback-model:generateContent',
+            $recorded[2][0]->url(),
+        );
+        $this->assertSame(['gemini-test-key'], $recorded[2][0]->header('x-goog-api-key'));
+        $this->assertStringNotContainsString('key=', $recorded[2][0]->url());
+        $this->assertSame(
+            'object',
+            data_get($recorded[2][0]->data(), 'generationConfig.responseJsonSchema.type'),
+        );
     }
 
     public function test_completing_a_task_completes_its_subtasks(): void

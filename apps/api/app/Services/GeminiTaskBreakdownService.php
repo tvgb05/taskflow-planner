@@ -4,10 +4,13 @@ namespace App\Services;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
+use Throwable;
 
 class GeminiTaskBreakdownService
 {
@@ -19,6 +22,7 @@ class GeminiTaskBreakdownService
     {
         $apiKey = config('services.gemini.key');
         $model = config('services.gemini.model', 'gemini-3.5-flash');
+        $fallbackModel = config('services.gemini.fallback_model', 'gemini-3.1-flash-lite');
 
         if (blank($apiKey)) {
             throw new RuntimeException('Gemini API key is not configured.');
@@ -52,7 +56,8 @@ class GeminiTaskBreakdownService
         }
 
         $timeout = max(30, (int) config('services.gemini.timeout', 90));
-        $executionTimeout = $timeout + 15;
+        $primaryTimeout = max(10, min($timeout, (int) config('services.gemini.primary_timeout', 20)));
+        $executionTimeout = $primaryTimeout + $timeout + 20;
         if (function_exists('ini_set')) {
             @ini_set('max_execution_time', (string) $executionTimeout);
         }
@@ -60,36 +65,57 @@ class GeminiTaskBreakdownService
             @set_time_limit($executionTimeout);
         }
 
-        try {
-            $response = Http::acceptJson()
-                ->connectTimeout(10)
-                ->timeout($timeout)
-                ->post(
-                    "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}",
-                    [
-                        'systemInstruction' => [
-                            'parts' => [
-                                ['text' => $this->systemInstruction()],
-                            ],
-                        ],
-                        'contents' => [
-                            [
-                                'role' => 'user',
-                                'parts' => [
-                                    ['text' => $this->prompt($payload)],
-                                ],
-                            ],
-                        ],
-                        'generationConfig' => [
-                            'responseMimeType' => 'application/json',
-                            'temperature' => 0.2,
-                            'candidateCount' => 1,
-                        ],
+        $requestBody = [
+            'systemInstruction' => [
+                'parts' => [
+                    ['text' => $this->systemInstruction()],
+                ],
+            ],
+            'contents' => [
+                [
+                    'role' => 'user',
+                    'parts' => [
+                        ['text' => $this->prompt($payload)],
                     ],
-                );
-        } catch (ConnectionException $exception) {
-            report($exception);
+                ],
+            ],
+            'generationConfig' => [
+                'responseMimeType' => 'application/json',
+                'responseJsonSchema' => $this->responseSchema(
+                    $createSubtasks,
+                    $minTasks,
+                    $maxTasks,
+                    $minSubtasks,
+                    $maxSubtasks,
+                    $payload['available_minutes_per_day'],
+                ),
+                'candidateCount' => 1,
+            ],
+        ];
+        $models = array_values(array_unique(array_filter([$model, $fallbackModel])));
+        $response = null;
 
+        foreach ($models as $modelIndex => $candidateModel) {
+            try {
+                $candidateResponse = $this->requestModel(
+                    $candidateModel,
+                    $apiKey,
+                    $requestBody,
+                    count($models) > 1 && $modelIndex === 0 ? $primaryTimeout : $timeout,
+                );
+            } catch (ConnectionException $exception) {
+                report(new RuntimeException("Gemini connection failed for model {$candidateModel}."));
+
+                continue;
+            }
+
+            $response = $candidateResponse;
+            if ($response->successful() || ! $this->isTransientStatus($response->status())) {
+                break;
+            }
+        }
+
+        if (! $response instanceof Response) {
             throw new RuntimeException('Gemini could not be reached before the request timeout. Please try again.');
         }
 
@@ -102,6 +128,10 @@ class GeminiTaskBreakdownService
 
             if ($response->status() === 403 || $response->status() === 401) {
                 throw new RuntimeException('Gemini rejected the API key or this model is not enabled for the key.');
+            }
+
+            if ($this->isTransientStatus($response->status())) {
+                throw new RuntimeException('Gemini is temporarily overloaded. Please wait a moment and try again.');
             }
 
             report(new RuntimeException('Gemini request failed: '.$providerMessage));
@@ -202,6 +232,10 @@ class GeminiTaskBreakdownService
         $validator = Validator::make(['tasks' => $tasks], $rules);
 
         if ($validator->fails()) {
+            report(new RuntimeException(
+                'Gemini schema validation failed: '.json_encode($validator->errors()->toArray()),
+            ));
+
             throw ValidationException::withMessages([
                 'ai_response' => ['Gemini returned JSON that did not match the expected task schema.'],
             ]);
@@ -250,6 +284,136 @@ class GeminiTaskBreakdownService
         }
 
         return $validated;
+    }
+
+    /**
+     * @param  array<string, mixed>  $body
+     */
+    private function requestModel(
+        string $model,
+        string $apiKey,
+        array $body,
+        int $timeout,
+    ): Response {
+        $attempts = max(1, min(5, (int) config('services.gemini.retry_attempts', 3)));
+
+        return Http::acceptJson()
+            ->withHeaders(['x-goog-api-key' => $apiKey])
+            ->connectTimeout(10)
+            ->timeout($timeout)
+            ->retry(
+                $attempts,
+                fn (int $attempt): int => min(4000, 500 * (2 ** ($attempt - 1))) + random_int(0, 250),
+                fn (Throwable $exception): bool => $exception instanceof RequestException
+                    && $this->isTransientStatus($exception->response->status()),
+                throw: false,
+            )
+            ->post(
+                "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent",
+                $body,
+            );
+    }
+
+    private function isTransientStatus(int $status): bool
+    {
+        return in_array($status, [408, 425, 429, 500, 502, 503, 504], true);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function responseSchema(
+        bool $createSubtasks,
+        int $minTasks,
+        int $maxTasks,
+        int $minSubtasks,
+        int $maxSubtasks,
+        int $availableMinutesPerDay,
+    ): array {
+        $resourceSchema = [
+            'type' => 'object',
+            'required' => ['title', 'url'],
+            'properties' => [
+                'title' => ['type' => 'string', 'maxLength' => 120],
+                'url' => ['type' => 'string', 'format' => 'uri', 'maxLength' => 1000],
+            ],
+        ];
+        $subtaskSchema = [
+            'type' => 'object',
+            'required' => [
+                'title',
+                'description',
+                'resources',
+                'estimated_minutes',
+                'scheduled_date',
+            ],
+            'properties' => [
+                'title' => ['type' => 'string', 'maxLength' => 255],
+                'description' => ['type' => 'string', 'maxLength' => 800],
+                'resources' => [
+                    'type' => 'array',
+                    'maxItems' => 5,
+                    'items' => $resourceSchema,
+                ],
+                'estimated_minutes' => [
+                    'type' => 'integer',
+                    'minimum' => 5,
+                    'maximum' => $availableMinutesPerDay,
+                ],
+                'scheduled_date' => ['type' => 'string', 'format' => 'date'],
+            ],
+        ];
+
+        return [
+            'type' => 'object',
+            'required' => ['tasks'],
+            'properties' => [
+                'tasks' => [
+                    'type' => 'array',
+                    'minItems' => $minTasks,
+                    'maxItems' => $maxTasks,
+                    'items' => [
+                        'type' => 'object',
+                        'required' => [
+                            'title',
+                            'phase',
+                            'description',
+                            'resources',
+                            'deadline',
+                            'estimated_minutes',
+                            'priority',
+                            'subtasks',
+                        ],
+                        'properties' => [
+                            'title' => ['type' => 'string', 'maxLength' => 255],
+                            'phase' => ['type' => 'string', 'maxLength' => 120],
+                            'description' => ['type' => 'string', 'maxLength' => 1200],
+                            'resources' => [
+                                'type' => 'array',
+                                'maxItems' => 5,
+                                'items' => $resourceSchema,
+                            ],
+                            'deadline' => ['type' => 'string', 'format' => 'date'],
+                            'estimated_minutes' => [
+                                'type' => 'integer',
+                                'minimum' => 5,
+                                'maximum' => 10080,
+                            ],
+                            'priority' => [
+                                'type' => 'string',
+                                'enum' => ['low', 'medium', 'high'],
+                            ],
+                            'subtasks' => [
+                                'type' => 'array',
+                                'minItems' => $createSubtasks ? $minSubtasks : 0,
+                                'maxItems' => $createSubtasks ? $maxSubtasks : 0,
+                                'items' => $subtaskSchema,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
     }
 
     /**
