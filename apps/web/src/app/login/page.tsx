@@ -20,6 +20,7 @@ export default function LoginPage() {
   const t = useAppText();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [errors, setErrors] = useState<ValidationErrors | undefined>();
   const [submitting, setSubmitting] = useState(false);
@@ -37,7 +38,7 @@ export default function LoginPage() {
     setErrors(undefined);
 
     try {
-      await login({ email, password });
+      await login({ email, password, remember });
       router.replace("/dashboard");
     } catch (error) {
       if (error instanceof ApiRequestError) {
@@ -81,6 +82,15 @@ export default function LoginPage() {
               autoComplete="current-password"
               required
             />
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500"
+                checked={remember}
+                onChange={(event) => setRemember(event.target.checked)}
+              />
+              {t.auth.rememberForThirtyDays}
+            </label>
             <Button type="submit" disabled={submitting}>
               {t.auth.login}
               <ArrowRight className="h-4 w-4" />

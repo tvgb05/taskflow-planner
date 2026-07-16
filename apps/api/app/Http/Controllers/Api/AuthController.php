@@ -66,6 +66,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'email' => ['required', 'email', 'max:255'],
             'password' => ['required', 'string'],
+            'remember' => ['sometimes', 'boolean'],
         ]);
 
         $user = User::query()
@@ -78,7 +79,14 @@ class AuthController extends Controller
             ]);
         }
 
-        auth()->guard('web')->login($user);
+        $remember = (bool) ($validated['remember'] ?? false);
+        $guard = auth()->guard('web');
+
+        if ($remember) {
+            $guard->setRememberDuration(30 * 24 * 60);
+        }
+
+        $guard->login($user, $remember);
         $request->session()->regenerate();
 
         return response()->json([

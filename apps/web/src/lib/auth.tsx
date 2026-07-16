@@ -21,6 +21,7 @@ import type { User } from "@/lib/types";
 type LoginInput = {
   email: string;
   password: string;
+  remember: boolean;
 };
 
 type RegisterInput = {

@@ -576,6 +576,34 @@ class PlanningWorkflowTest extends TestCase
         ])->assertOk()->assertJsonPath('user.id', $user->id);
     }
 
+    public function test_a_user_can_stay_signed_in_for_thirty_days(): void
+    {
+        Carbon::setTestNow('2026-07-16 09:00:00');
+        $user = User::factory()->create([
+            'email' => 'remember@example.com',
+            'password' => 'password123',
+        ]);
+        $this->withHeader('Origin', 'http://localhost:3000');
+
+        $response = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => 'password123',
+            'remember' => true,
+        ]);
+        $recallerName = auth()->guard('web')->getRecallerName();
+        $recallerCookie = collect($response->headers->getCookies())
+            ->first(fn ($cookie): bool => $cookie->getName() === $recallerName);
+
+        $response->assertOk()->assertCookie($recallerName);
+        $this->assertNotNull($recallerCookie);
+        $this->assertEqualsWithDelta(
+            now()->addDays(30)->timestamp,
+            $recallerCookie->getExpiresTime(),
+            5,
+        );
+        $this->assertNotNull($user->refresh()->remember_token);
+    }
+
     public function test_a_user_cannot_change_to_an_existing_email(): void
     {
         $user = User::factory()->create(['email' => 'first@example.com']);
