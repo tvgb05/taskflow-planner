@@ -98,8 +98,21 @@ class GeminiTaskBreakdownService
             throw new RuntimeException('Gemini could not be reached before the request timeout. Please try again.');
         }
 
+        if ($response->status() === 400) {
+            $requestWithoutSchema = $requestBody;
+            unset($requestWithoutSchema['generationConfig']['responseJsonSchema']);
+
+            try {
+                $response = $this->requestModel($model, $apiKey, $requestWithoutSchema, $timeout);
+            } catch (ConnectionException $exception) {
+                report(new RuntimeException("Gemini connection failed for model {$model} without response schema."));
+
+                throw new RuntimeException('Gemini could not be reached before the request timeout. Please try again.');
+            }
+        }
+
         if ($response->failed()) {
-            $providerMessage = (string) data_get($response->json(), 'error.message', '');
+            $providerMessage = $this->providerErrorMessage($response);
 
             if ($response->status() === 429) {
                 throw new RuntimeException('Gemini quota is currently exhausted. Try again shortly or enable billing for the selected model.');
@@ -302,6 +315,34 @@ class GeminiTaskBreakdownService
     private function isTransientStatus(int $status): bool
     {
         return in_array($status, [408, 425, 500, 502, 503, 504], true);
+    }
+
+    private function providerErrorMessage(Response $response): string
+    {
+        $payload = $response->json();
+        $message = trim((string) data_get($payload, 'error.message', ''));
+        $violations = collect(data_get($payload, 'error.details', []))
+            ->flatMap(fn (mixed $detail): array => is_array($detail)
+                ? (array) ($detail['fieldViolations'] ?? [])
+                : [])
+            ->map(function (mixed $violation): string {
+                if (! is_array($violation)) {
+                    return '';
+                }
+
+                $field = trim((string) ($violation['field'] ?? ''));
+                $description = trim((string) ($violation['description'] ?? ''));
+
+                return trim($field.($field !== '' && $description !== '' ? ': ' : '').$description);
+            })
+            ->filter()
+            ->unique()
+            ->implode('; ');
+
+        return collect([$message, $violations])
+            ->filter()
+            ->unique()
+            ->implode(' - ');
     }
 
     /**

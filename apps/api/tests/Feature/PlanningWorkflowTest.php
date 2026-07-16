@@ -461,6 +461,73 @@ class PlanningWorkflowTest extends TestCase
         );
     }
 
+    public function test_gemini_retries_without_response_schema_when_the_provider_rejects_it(): void
+    {
+        Carbon::setTestNow('2026-07-16 09:00:00');
+        config()->set('services.gemini.key', 'gemini-test-key');
+        config()->set('services.gemini.model', 'gemini-test-model');
+        config()->set('services.gemini.retry_attempts', 1);
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::sequence()
+                ->push([
+                    'error' => [
+                        'code' => 400,
+                        'message' => 'Request contains an invalid argument.',
+                        'status' => 'INVALID_ARGUMENT',
+                    ],
+                ], 400)
+                ->push([
+                    'candidates' => [[
+                        'content' => [
+                            'parts' => [[
+                                'text' => json_encode(['tasks' => [[
+                                    'title' => 'Prepare the crochet materials',
+                                    'phase' => 'Preparation',
+                                    'description' => 'Choose beginner-friendly yarn and a matching hook, then verify the gauge.',
+                                    'resources' => [],
+                                    'deadline' => '2026-07-17',
+                                    'estimated_minutes' => 30,
+                                    'priority' => 'high',
+                                    'subtasks' => [[
+                                        'title' => 'Choose yarn and hook',
+                                        'description' => 'Select medium yarn and the recommended hook size, then make a small test chain.',
+                                        'resources' => [],
+                                        'estimated_minutes' => 30,
+                                        'scheduled_date' => '2026-07-16',
+                                    ]],
+                                ]]]),
+                            ]],
+                        ],
+                    ]],
+                ]),
+        ]);
+
+        $result = app(GeminiTaskBreakdownService::class)->suggest([
+            'goal' => 'Crochet a simple tote bag for a beginner.',
+            'deadline' => '2026-07-17',
+            'available_minutes_per_day' => 60,
+            'language' => 'en',
+            'plan_mode' => 'phased',
+            'create_subtasks' => true,
+            'min_tasks' => 1,
+            'max_tasks' => 1,
+            'min_subtasks' => 1,
+            'max_subtasks' => 1,
+        ]);
+
+        $this->assertSame('Prepare the crochet materials', $result['tasks'][0]['title']);
+        $recorded = Http::recorded();
+        $this->assertCount(2, $recorded);
+        $this->assertSame(
+            'object',
+            data_get($recorded[0][0]->data(), 'generationConfig.responseJsonSchema.type'),
+        );
+        $this->assertNull(
+            data_get($recorded[1][0]->data(), 'generationConfig.responseJsonSchema'),
+        );
+        $this->assertStringContainsString('/models/gemini-test-model:generateContent', $recorded[1][0]->url());
+    }
+
     public function test_gemini_does_not_retry_when_the_model_quota_is_exhausted(): void
     {
         Carbon::setTestNow('2026-07-16 09:00:00');
