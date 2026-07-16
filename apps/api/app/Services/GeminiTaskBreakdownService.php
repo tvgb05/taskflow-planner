@@ -21,8 +21,7 @@ class GeminiTaskBreakdownService
     public function suggest(array $payload): array
     {
         $apiKey = config('services.gemini.key');
-        $model = config('services.gemini.model', 'gemini-3.5-flash');
-        $fallbackModel = config('services.gemini.fallback_model', 'gemini-3.1-flash-lite');
+        $model = config('services.gemini.model', 'gemini-3.1-flash-lite');
 
         if (blank($apiKey)) {
             throw new RuntimeException('Gemini API key is not configured.');
@@ -56,8 +55,7 @@ class GeminiTaskBreakdownService
         }
 
         $timeout = max(30, (int) config('services.gemini.timeout', 90));
-        $primaryTimeout = max(10, min($timeout, (int) config('services.gemini.primary_timeout', 20)));
-        $executionTimeout = $primaryTimeout + $timeout + 20;
+        $executionTimeout = $timeout + 15;
         if (function_exists('ini_set')) {
             @ini_set('max_execution_time', (string) $executionTimeout);
         }
@@ -92,30 +90,11 @@ class GeminiTaskBreakdownService
                 'candidateCount' => 1,
             ],
         ];
-        $models = array_values(array_unique(array_filter([$model, $fallbackModel])));
-        $response = null;
+        try {
+            $response = $this->requestModel($model, $apiKey, $requestBody, $timeout);
+        } catch (ConnectionException $exception) {
+            report(new RuntimeException("Gemini connection failed for model {$model}."));
 
-        foreach ($models as $modelIndex => $candidateModel) {
-            try {
-                $candidateResponse = $this->requestModel(
-                    $candidateModel,
-                    $apiKey,
-                    $requestBody,
-                    count($models) > 1 && $modelIndex === 0 ? $primaryTimeout : $timeout,
-                );
-            } catch (ConnectionException $exception) {
-                report(new RuntimeException("Gemini connection failed for model {$candidateModel}."));
-
-                continue;
-            }
-
-            $response = $candidateResponse;
-            if ($response->successful() || ! $this->isTransientStatus($response->status())) {
-                break;
-            }
-        }
-
-        if (! $response instanceof Response) {
             throw new RuntimeException('Gemini could not be reached before the request timeout. Please try again.');
         }
 
@@ -128,6 +107,12 @@ class GeminiTaskBreakdownService
 
             if ($response->status() === 403 || $response->status() === 401) {
                 throw new RuntimeException('Gemini rejected the API key or this model is not enabled for the key.');
+            }
+
+            if ($response->status() === 400) {
+                report(new RuntimeException('Gemini rejected the request: '.$providerMessage));
+
+                throw new RuntimeException('Gemini rejected the request: '.($providerMessage ?: 'Invalid request.'));
             }
 
             if ($this->isTransientStatus($response->status())) {
@@ -316,7 +301,7 @@ class GeminiTaskBreakdownService
 
     private function isTransientStatus(int $status): bool
     {
-        return in_array($status, [408, 425, 429, 500, 502, 503, 504], true);
+        return in_array($status, [408, 425, 500, 502, 503, 504], true);
     }
 
     /**

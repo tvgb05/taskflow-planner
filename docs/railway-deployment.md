@@ -76,7 +76,7 @@ CACHE_STORE=database
 QUEUE_CONNECTION=database
 
 GEMINI_API_KEY=<gemini-key>
-GEMINI_MODEL=gemini-3.5-flash
+GEMINI_MODEL=gemini-3.1-flash-lite
 GEMINI_TIMEOUT=90
 TASKFLOW_AI_PROFILE=portfolio_planner
 

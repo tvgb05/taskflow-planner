@@ -398,18 +398,14 @@ class PlanningWorkflowTest extends TestCase
         $this->assertStringContainsString('task-format learning is disabled', $disabledPrompt);
     }
 
-    public function test_gemini_uses_the_fallback_model_when_the_primary_model_is_overloaded(): void
+    public function test_gemini_retries_the_configured_model_when_it_is_temporarily_unavailable(): void
     {
         Carbon::setTestNow('2026-07-15 09:00:00');
         config()->set('services.gemini.key', 'gemini-test-key');
-        config()->set('services.gemini.model', 'gemini-primary-model');
-        config()->set('services.gemini.fallback_model', 'gemini-fallback-model');
+        config()->set('services.gemini.model', 'gemini-test-model');
         config()->set('services.gemini.retry_attempts', 2);
         Http::fake([
             'generativelanguage.googleapis.com/*' => Http::sequence()
-                ->push([
-                    'error' => ['message' => 'The model is currently experiencing high demand.'],
-                ], 503)
                 ->push([
                     'error' => ['message' => 'The model is currently experiencing high demand.'],
                 ], 503)
@@ -454,17 +450,48 @@ class PlanningWorkflowTest extends TestCase
 
         $this->assertSame('Prepare the crochet materials', $result['tasks'][0]['title']);
         $recorded = Http::recorded();
-        $this->assertCount(3, $recorded);
-        $this->assertStringContainsString(
-            '/models/gemini-fallback-model:generateContent',
-            $recorded[2][0]->url(),
-        );
-        $this->assertSame(['gemini-test-key'], $recorded[2][0]->header('x-goog-api-key'));
-        $this->assertStringNotContainsString('key=', $recorded[2][0]->url());
+        $this->assertCount(2, $recorded);
+        $this->assertStringContainsString('/models/gemini-test-model:generateContent', $recorded[0][0]->url());
+        $this->assertStringContainsString('/models/gemini-test-model:generateContent', $recorded[1][0]->url());
+        $this->assertSame(['gemini-test-key'], $recorded[1][0]->header('x-goog-api-key'));
+        $this->assertStringNotContainsString('key=', $recorded[1][0]->url());
         $this->assertSame(
             'object',
-            data_get($recorded[2][0]->data(), 'generationConfig.responseJsonSchema.type'),
+            data_get($recorded[1][0]->data(), 'generationConfig.responseJsonSchema.type'),
         );
+    }
+
+    public function test_gemini_does_not_retry_when_the_model_quota_is_exhausted(): void
+    {
+        Carbon::setTestNow('2026-07-16 09:00:00');
+        config()->set('services.gemini.key', 'gemini-test-key');
+        config()->set('services.gemini.model', 'gemini-test-model');
+        config()->set('services.gemini.retry_attempts', 3);
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([
+                'error' => ['message' => 'Quota exceeded for this project.'],
+            ], 429),
+        ]);
+
+        try {
+            app(GeminiTaskBreakdownService::class)->suggest([
+                'goal' => 'Crochet a simple tote bag for a beginner.',
+                'deadline' => '2026-07-17',
+                'available_minutes_per_day' => 60,
+                'language' => 'en',
+                'plan_mode' => 'phased',
+                'create_subtasks' => true,
+                'min_tasks' => 1,
+                'max_tasks' => 1,
+                'min_subtasks' => 1,
+                'max_subtasks' => 1,
+            ]);
+            $this->fail('Expected the exhausted Gemini quota to stop the request.');
+        } catch (\RuntimeException $exception) {
+            $this->assertStringContainsString('quota is currently exhausted', $exception->getMessage());
+        }
+
+        $this->assertCount(1, Http::recorded());
     }
 
     public function test_completing_a_task_completes_its_subtasks(): void
