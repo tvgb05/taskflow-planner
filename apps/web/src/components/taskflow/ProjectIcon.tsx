@@ -70,7 +70,7 @@ export function ProjectIconPicker({
 
   return (
     <fieldset className="grid gap-2">
-      <legend className="text-sm font-medium text-slate-700">{label}</legend>
+      <legend className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</legend>
       <div className="grid grid-cols-6 gap-2 sm:grid-cols-12">
         {projectIcons.map((item) => {
           const Icon = item.icon;
@@ -81,9 +81,9 @@ export function ProjectIconPicker({
               key={item.key}
               type="button"
               className={cn(
-                "grid h-10 w-10 place-items-center rounded-md border text-slate-600 transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-700",
+                "grid h-10 w-10 place-items-center rounded-md border text-slate-600 dark:text-slate-300 transition hover:border-cyan-300 dark:hover:border-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-950/50 hover:text-cyan-700 dark:hover:text-cyan-300",
                 active &&
-                  "border-cyan-500 bg-cyan-50 text-cyan-800 ring-2 ring-cyan-100",
+                  "border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-800 dark:text-cyan-200 ring-2 ring-cyan-100 dark:ring-cyan-900",
               )}
               onClick={() => onChange(item.key)}
               aria-pressed={active}

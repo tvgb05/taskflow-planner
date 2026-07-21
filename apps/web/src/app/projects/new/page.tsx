@@ -198,7 +198,7 @@ export default function NewProjectPage() {
                   rows={8}
                   onChange={(event) => setDescription(event.target.value)}
                 />
-                <p className="mt-1 text-xs leading-5 text-slate-500">
+                <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
                   {t.newProject.descriptionHint}
                 </p>
               </div>

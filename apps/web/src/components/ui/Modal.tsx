@@ -29,13 +29,13 @@ export function Modal({
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/40 px-4 py-6">
       <div
-        className="w-full max-w-3xl rounded-md bg-white shadow-xl"
+        className="w-full max-w-3xl rounded-md bg-white dark:bg-slate-900 shadow-xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
       >
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-          <h2 id={titleId} className="text-lg font-semibold text-slate-950">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
+          <h2 id={titleId} className="text-lg font-semibold text-slate-950 dark:text-slate-50">
             {title}
           </h2>
           {showCloseButton ? (
@@ -44,7 +44,7 @@ export function Modal({
               variant="ghost"
               className={cn(
                 iconOnlyButtonStyles,
-                "h-9 w-9 text-base font-bold leading-none text-slate-700",
+                "h-9 w-9 text-base font-bold leading-none text-slate-700 dark:text-slate-300",
               )}
               onClick={onClose}
               aria-label={t.modal.close}

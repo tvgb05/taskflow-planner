@@ -102,10 +102,10 @@ export default function RegisterPage() {
     <main className="grid min-h-screen place-items-center px-4 py-10">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <h1 className="text-xl font-bold text-slate-950">
+          <h1 className="text-xl font-bold text-slate-950 dark:text-slate-50">
             {t.auth.createAccount}
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t.auth.registerSubtitle}
           </p>
         </CardHeader>
@@ -158,7 +158,7 @@ export default function RegisterPage() {
               required
             />
             {otpSent ? (
-              <p className="rounded-md border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm text-cyan-800" role="status">
+              <p className="rounded-md border border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-950/40 px-3 py-2 text-sm text-cyan-800 dark:text-cyan-200" role="status">
                 <span className="font-semibold">{t.auth.otpSent}</span>{" "}
                 {t.auth.checkMailFolders}
               </p>
@@ -193,9 +193,9 @@ export default function RegisterPage() {
               <ArrowRight className="h-4 w-4" />
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-slate-500">
+          <p className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">
             {t.auth.alreadyHaveAccount}{" "}
-            <Link href="/login" className="font-semibold text-cyan-700">
+            <Link href="/login" className="font-semibold text-cyan-700 dark:text-cyan-300">
               {t.auth.login}
             </Link>
           </p>

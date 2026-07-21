@@ -50,21 +50,21 @@ export function WelcomeOnboardingModal({
           </Button>
         </div>
 
-        <p className="max-w-2xl text-base leading-7 text-slate-700">
+        <p className="max-w-2xl text-base leading-7 text-slate-700 dark:text-slate-300">
           {t.guide.welcome.introduction}
         </p>
 
-        <div className="grid gap-4 border-y border-slate-100 py-5">
+        <div className="grid gap-4 border-y border-slate-100 dark:border-slate-800 py-5">
           {items.map(({ icon: Icon, title, description }) => (
             <div key={title} className="flex gap-4">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-cyan-50 text-cyan-700">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300">
                 <Icon className="h-5 w-5" />
               </span>
               <div>
-                <h3 className="text-sm font-semibold text-slate-950">
+                <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-50">
                   {title}
                 </h3>
-                <p className="mt-1 text-sm leading-6 text-slate-600">
+                <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
                   {description}
                 </p>
               </div>
@@ -72,7 +72,7 @@ export function WelcomeOnboardingModal({
           ))}
         </div>
 
-        <p className="text-sm leading-6 text-slate-600">
+        <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
           {t.guide.welcome.tourDescription}
         </p>
 

@@ -51,10 +51,10 @@ export function GoogleAuthCompleteClient({
     <main className="grid min-h-screen place-items-center px-4 py-10">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <h1 className="text-xl font-bold text-slate-950">
+          <h1 className="text-xl font-bold text-slate-950 dark:text-slate-50">
             TaskFlow Planner
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t.auth.googleCompleting}
           </p>
         </CardHeader>
@@ -67,8 +67,8 @@ export function GoogleAuthCompleteClient({
               </Link>
             </>
           ) : (
-            <div className="flex items-center justify-center gap-3 py-8 text-sm font-medium text-slate-600">
-              <LoaderCircle className="h-5 w-5 animate-spin text-cyan-700" />
+            <div className="flex items-center justify-center gap-3 py-8 text-sm font-medium text-slate-600 dark:text-slate-300">
+              <LoaderCircle className="h-5 w-5 animate-spin text-cyan-700 dark:text-cyan-300" />
               {t.auth.googleCompleting}
             </div>
           )}

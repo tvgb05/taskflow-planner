@@ -12,7 +12,7 @@ export function ErrorMessage({
   }
 
   return (
-    <div className="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+    <div className="rounded-md border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 px-4 py-3 text-sm text-rose-700 dark:text-rose-300">
       {message ? <p className="font-medium">{message}</p> : null}
       {errors ? (
         <ul className="mt-2 list-inside list-disc space-y-1">

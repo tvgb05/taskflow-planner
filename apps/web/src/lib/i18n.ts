@@ -67,6 +67,10 @@ export const appText = {
       verificationOtpError: "Unable to verify this code.",
       language: "Language",
       dateFormat: "Date format",
+      theme: "Appearance",
+      themeAuto: "Auto",
+      themeLight: "Light",
+      themeDark: "Dark",
       learnFromTaskPatterns: "Learn from my task format",
       learnFromTaskPatternsHint:
         "Let AI imitate the structure and detail level of tasks you create manually. Goal content is not copied.",
@@ -553,6 +557,10 @@ export const appText = {
       verificationOtpError: "Không thể xác thực mã này.",
       language: "Ngôn ngữ",
       dateFormat: "Định dạng ngày tháng",
+      theme: "Giao diện",
+      themeAuto: "Tự động",
+      themeLight: "Sáng",
+      themeDark: "Tối",
       learnFromTaskPatterns: "Học theo cách tôi viết nhiệm vụ",
       learnFromTaskPatternsHint:
         "Cho phép trợ lý học cấu trúc và mức độ chi tiết từ các nhiệm vụ bạn tự tạo. Nội dung của mục tiêu khác sẽ không bị sao chép.",

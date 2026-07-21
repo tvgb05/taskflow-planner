@@ -1,4 +1,10 @@
-# Setup Guide
+# Local/offline setup guide
+
+This guide runs the Next.js web app, Laravel API, and MySQL database on your
+local machine. It is separate from the public Railway deployment documented in
+[`railway-deployment.md`](railway-deployment.md). The core planning workflow is
+available locally, while Gemini, Google login, email delivery, and reCAPTCHA
+require Internet access and valid service credentials.
 
 ## Requirements
 

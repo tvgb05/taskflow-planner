@@ -57,8 +57,8 @@ export default function LoginPage() {
     <main className="grid min-h-screen place-items-center px-4 py-10">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <h1 className="text-xl font-bold text-slate-950">TaskFlow Planner</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-xl font-bold text-slate-950 dark:text-slate-50">TaskFlow Planner</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t.auth.loginSubtitle}
           </p>
         </CardHeader>
@@ -87,10 +87,10 @@ export default function LoginPage() {
               autoComplete="current-password"
               required
             />
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
               <input
                 type="checkbox"
-                className="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500"
+                className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-cyan-700 dark:text-cyan-300 focus:ring-cyan-500"
                 checked={remember}
                 onChange={(event) => setRemember(event.target.checked)}
               />
@@ -101,9 +101,9 @@ export default function LoginPage() {
               <ArrowRight className="h-4 w-4" />
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-slate-500">
+          <p className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">
             {t.auth.needAccount}{" "}
-            <Link href="/register" className="font-semibold text-cyan-700">
+            <Link href="/register" className="font-semibold text-cyan-700 dark:text-cyan-300">
               {t.auth.register}
             </Link>
           </p>

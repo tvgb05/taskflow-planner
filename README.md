@@ -2,22 +2,29 @@
 
 TaskFlow Planner is a small fullstack web application for breaking large goals into tasks and subtasks, estimating effort, and scheduling incomplete work before a project deadline.
 
+**Live product:** [https://web-taskflow-planner.up.railway.app/](https://web-taskflow-planner.up.railway.app/)
+
+The web app, Laravel API, and MySQL database are deployed on Railway. The `main`
+branch uses Railway's automated build and deployment pipeline for CI/CD.
+
 ## Tech stack
 
 - Frontend: Next.js, TypeScript, Tailwind CSS
 - Backend: Laravel, Sanctum, REST API, Eloquent ORM
 - Database: MySQL
 - AI: Gemini API through the Laravel backend only
+- Deployment and CI/CD: Railway
 
 ## Features
 
-- Register with a unique username, login by username or email, logout, and use a cookie-authenticated current user endpoint
+- Register and log in with email/password or Google, log out, and use a cookie-authenticated current user endpoint
 - Project CRUD with deadline and available minutes per day
 - Task CRUD with status, priority, deadline, filters, and estimates
 - Subtask CRUD with done state and scheduled date
 - Simple Laravel scheduling service that respects daily capacity
-- Gemini 3.5 Flash-backed AI planning with phased, recurring-weekly, and next-day pipeline modes
+- Gemini-backed AI planning with phased, recurring-weekly, and next-day pipeline modes
 - Nodemailer and Gmail OTP verification with optional Google reCAPTCHA protection during registration
+- Automatic browser theme detection with light and dark appearance overrides
 - Responsive dashboard, project list, project detail, schedule view, and clear states
 
 ## Screenshots
@@ -28,9 +35,14 @@ Add screenshots after running the app:
 - `docs/screenshots/dashboard.png`
 - `docs/screenshots/project-detail.png`
 
-## Setup
+## Local/offline setup
 
-Read the detailed setup notes in [docs/setup.md](docs/setup.md).
+This setup is for running the web app, Laravel API, and MySQL database locally
+on your own machine instead of using the deployed product. The core planning
+workflow can run locally; Google login, Gemini suggestions, email delivery, and
+reCAPTCHA still require Internet access and their corresponding credentials.
+
+Read the detailed local setup notes in [docs/setup.md](docs/setup.md).
 
 Short version:
 
@@ -158,19 +170,3 @@ This project was built as a fullstack portfolio project to practice Next.js, Lar
 - Export schedule to CSV
 - Email reminders
 - Docker Compose setup
-
-## CV bullet
-
-```latex
-\resumeProjectHeading
-{\textbf{TaskFlow Planner} $|$ \textbf{Next.js, TypeScript, Laravel, MySQL, REST API, Gemini API}}
-{\textit{Jul 2026}}
-{\textit{A fullstack task breakdown and scheduling app with AI-assisted subtask planning}}
-\resumeItemListStart
-\resumeItem{Built a responsive Next.js dashboard with reusable components for projects, tasks, subtasks, filters, and daily schedule views.}
-\resumeItem{Developed RESTful APIs using Laravel routes, controllers, migrations, models, Eloquent ORM, and authentication workflows.}
-\resumeItem{Designed relational database structures for users, projects, tasks, subtasks, priorities, deadlines, and scheduled work sessions.}
-\resumeItem{Integrated Gemini API for AI-assisted task breakdown, with structured JSON validation before saving subtasks to the database.}
-\resumeItem{Used Git and Postman to manage development workflow, test API endpoints, debug issues, and maintain clean project structure.}
-\resumeItemListEnd
-```

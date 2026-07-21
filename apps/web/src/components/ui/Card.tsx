@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("rounded-md border border-slate-200 bg-white", className)}
+      className={cn("rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900", className)}
       {...props}
     />
   );
@@ -17,7 +17,7 @@ export function CardHeader({
 }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("border-b border-slate-100 px-5 py-4", className)}
+      className={cn("border-b border-slate-100 dark:border-slate-800 px-5 py-4", className)}
       {...props}
     />
   );

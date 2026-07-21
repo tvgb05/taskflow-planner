@@ -257,7 +257,7 @@ export function GuideOverlay({
           <ul className="mt-3 grid gap-1 text-sm text-cyan-50">
             {step.details.map((detail) => (
               <li key={detail} className="flex gap-2">
-                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-cyan-200" />
+                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-cyan-200 dark:bg-cyan-900" />
                 <span>{detail}</span>
               </li>
             ))}
@@ -267,7 +267,7 @@ export function GuideOverlay({
         <div className="mt-4 flex items-center justify-between gap-2">
           <button
             type="button"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-cyan-300 bg-cyan-900 px-4 text-sm font-semibold text-white transition hover:bg-cyan-800 disabled:pointer-events-none disabled:opacity-50"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-cyan-300 dark:border-cyan-700 bg-cyan-900 px-4 text-sm font-semibold text-white transition hover:bg-cyan-800 disabled:pointer-events-none disabled:opacity-50"
             onClick={() => setIndex((current) => Math.max(0, current - 1))}
             disabled={isFirst}
           >
@@ -276,7 +276,7 @@ export function GuideOverlay({
           </button>
           <button
             type="button"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-white bg-white px-4 text-sm font-semibold text-cyan-900 transition hover:bg-cyan-50"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-white bg-white dark:bg-slate-900 px-4 text-sm font-semibold text-cyan-900 dark:text-cyan-100 transition hover:bg-cyan-50 dark:hover:bg-cyan-950/50"
             onClick={() => {
               if (isLast) {
                 (onComplete ?? onClose)();

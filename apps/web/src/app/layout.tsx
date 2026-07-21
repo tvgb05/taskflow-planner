@@ -19,6 +19,22 @@ export const metadata: Metadata = {
   description: "AI-assisted goal planning and scheduling app.",
 };
 
+const themeInitializationScript = `
+  (function () {
+    try {
+      var stored = JSON.parse(localStorage.getItem("taskflow_user_preferences") || "{}");
+      var theme = ["auto", "light", "dark"].includes(stored.theme) ? stored.theme : "auto";
+      var dark = theme === "dark" || (theme === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      document.documentElement.classList.toggle("dark", dark);
+      document.documentElement.style.colorScheme = dark ? "dark" : "light";
+    } catch (error) {
+      var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.classList.toggle("dark", dark);
+      document.documentElement.style.colorScheme = dark ? "dark" : "light";
+    }
+  })();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,8 +44,12 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full bg-slate-50">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitializationScript }} />
+      </head>
+      <body className="min-h-full bg-slate-50 dark:bg-slate-950">
         <AuthProvider>
           <PreferencesProvider>{children}</PreferencesProvider>
         </AuthProvider>

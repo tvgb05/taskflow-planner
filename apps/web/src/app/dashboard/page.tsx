@@ -86,7 +86,7 @@ const taskCompletionStyles = {
   done: {
     variant: "secondary" as const,
     buttonClassName: "h-9 px-3",
-    iconClassName: "h-4 w-4 text-emerald-600",
+    iconClassName: "h-4 w-4 text-emerald-600 dark:text-emerald-400",
   },
 };
 
@@ -470,14 +470,14 @@ export default function DashboardPage() {
                   <Card key={metric.label}>
                     <CardContent className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-slate-500">
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                           {metric.label}
                         </p>
-                        <p className="mt-2 text-3xl font-bold text-slate-950">
+                        <p className="mt-2 text-3xl font-bold text-slate-950 dark:text-slate-50">
                           {metric.value}
                         </p>
                       </div>
-                      <div className="grid h-11 w-11 place-items-center rounded-md bg-cyan-50 text-cyan-700">
+                      <div className="grid h-11 w-11 place-items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300">
                         <Icon className="h-5 w-5" />
                       </div>
                     </CardContent>
@@ -490,10 +490,10 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h2 className="text-base font-semibold text-slate-950">
+                    <h2 className="text-base font-semibold text-slate-950 dark:text-slate-50">
                       {t.dashboard.oneOffTasks}
                     </h2>
-                    <p className="mt-1 text-sm leading-5 text-slate-500">
+                    <p className="mt-1 text-sm leading-5 text-slate-500 dark:text-slate-400">
                       {t.dashboard.oneOffTasksDescription}
                     </p>
                   </div>
@@ -530,7 +530,7 @@ export default function DashboardPage() {
                   href={`/projects/${project.id}`}
                   className={projects.length === 1 ? "block" : undefined}
                 >
-                  <Card className="h-full transition hover:border-cyan-200 hover:shadow-sm">
+                  <Card className="h-full transition hover:border-cyan-200 dark:hover:border-cyan-800 hover:shadow-sm">
                     <CardContent
                       className={
                         projects.length === 1
@@ -539,23 +539,23 @@ export default function DashboardPage() {
                       }
                     >
                       <div className="flex items-center gap-3">
-                        <span className="grid h-9 w-9 place-items-center rounded-md bg-cyan-50 text-cyan-700">
+                        <span className="grid h-9 w-9 place-items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300">
                           <ProjectIcon icon={project.icon} className="h-4 w-4" />
                         </span>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-950">{project.name}</p>
-                          <p className="text-xs text-slate-500">{t.dashboard.projectProgress}</p>
+                          <p className="truncate text-sm font-semibold text-slate-950 dark:text-slate-50">{project.name}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{t.dashboard.projectProgress}</p>
                         </div>
-                        <span className="ml-auto text-sm font-bold text-slate-700">{project.progress}%</span>
+                        <span className="ml-auto text-sm font-bold text-slate-700 dark:text-slate-300">{project.progress}%</span>
                       </div>
                       <div className="grid gap-2">
-                        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                        <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                           <div
                             className="h-full rounded-full bg-cyan-600 transition-[width]"
                             style={{ width: `${project.progress}%` }}
                           />
                         </div>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                           {project.done_tasks_count}/{project.tasks_count} {t.common.done}
                         </p>
                       </div>
@@ -571,7 +571,7 @@ export default function DashboardPage() {
             >
               <Card>
                 <CardContent>
-                  <h2 className="text-base font-semibold text-slate-950">
+                  <h2 className="text-base font-semibold text-slate-950 dark:text-slate-50">
                     {t.dashboard.tasksDueSoon}
                   </h2>
                   <TaskList
@@ -585,7 +585,7 @@ export default function DashboardPage() {
 
               <Card>
                 <CardContent>
-                  <h2 className="text-base font-semibold text-slate-950">
+                  <h2 className="text-base font-semibold text-slate-950 dark:text-slate-50">
                     {t.dashboard.todayScheduledSubtasks}
                   </h2>
                   {todaySubtasks.length === 0 ? (
@@ -655,13 +655,13 @@ export default function DashboardPage() {
           }}
         >
           <div className="grid gap-5">
-            <div className="flex gap-3 rounded-md border border-rose-200 bg-rose-50 p-4 text-rose-950">
-              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-700" />
+            <div className="flex gap-3 rounded-md border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 p-4 text-rose-950 dark:text-rose-100">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-700 dark:text-rose-300" />
               <div>
                 <p className="font-semibold">
                   {deletingStandaloneTask?.title}
                 </p>
-                <p className="mt-1 text-sm leading-6 text-rose-800">
+                <p className="mt-1 text-sm leading-6 text-rose-800 dark:text-rose-200">
                   {t.dashboard.deleteOneOffTaskConfirmation}
                 </p>
               </div>
@@ -728,14 +728,14 @@ function TaskList({
         return (
           <div
             key={task.id}
-            className="flex flex-col gap-3 rounded border border-slate-100 px-3 py-2 transition hover:border-cyan-200 hover:bg-cyan-50/40 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 rounded border border-slate-100 dark:border-slate-800 px-3 py-2 transition hover:border-cyan-200 dark:hover:border-cyan-800 hover:bg-cyan-50/40 sm:flex-row sm:items-center sm:justify-between"
           >
           <button
             type="button"
             className="flex min-w-0 flex-1 gap-3 text-left"
             onClick={() => onOpenTask(task)}
           >
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-cyan-100 bg-cyan-50 text-cyan-700">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-cyan-100 dark:border-cyan-900 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300">
               {task.project ? (
                 <ProjectIcon icon={task.project.icon} className="h-4 w-4" />
               ) : (
@@ -743,10 +743,10 @@ function TaskList({
               )}
             </span>
             <span className="min-w-0">
-              <span className="block text-sm font-semibold text-slate-900">
+              <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {task.title}
               </span>
-              <span className="block text-xs text-slate-500">
+              <span className="block text-xs text-slate-500 dark:text-slate-400">
                 {task.project?.name ?? t.dashboard.oneOffTask}
                 {task.deadline
                   ? ` - ${t.common.due} ${formatDate(task.deadline, preferences.dateFormat)}`
@@ -755,7 +755,7 @@ function TaskList({
             </span>
           </button>
           <div className="flex w-full shrink-0 items-center justify-end gap-2 sm:w-auto">
-            <span className="text-xs font-semibold uppercase text-slate-500">
+            <span className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
               {t.priority[task.priority]}
             </span>
             {!task.project && onEditStandaloneTask ? (
@@ -818,11 +818,11 @@ function SubtaskRow({
   return (
     <button
       type="button"
-      className="w-full rounded border border-slate-100 px-3 py-2 text-left transition hover:border-cyan-200 hover:bg-cyan-50/40"
+      className="w-full rounded border border-slate-100 dark:border-slate-800 px-3 py-2 text-left transition hover:border-cyan-200 dark:hover:border-cyan-800 hover:bg-cyan-50/40"
       onClick={() => onOpenTask(task)}
     >
       <div className="flex gap-3">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-cyan-100 bg-cyan-50 text-cyan-700">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-cyan-100 dark:border-cyan-900 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300">
           {task.project ? (
             <ProjectIcon icon={task.project.icon} className="h-4 w-4" />
           ) : (
@@ -830,15 +830,15 @@ function SubtaskRow({
           )}
         </span>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-900">
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             {subtask.title}
           </p>
           {subtask.description ? (
-            <p className="mt-1 line-clamp-2 text-sm text-slate-600">
+            <p className="mt-1 line-clamp-2 text-sm text-slate-600 dark:text-slate-300">
               {subtask.description}
             </p>
           ) : null}
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             {task.project?.name ?? t.dashboard.oneOffTask} - {task.title} -{" "}
             {subtask.estimated_minutes ?? 30} {t.common.min}
           </p>
@@ -889,25 +889,25 @@ function TaskDetailModal({
             >
               {t.priority[task.priority]}
             </Badge>
-            <span className="text-sm text-slate-500">
+            <span className="text-sm text-slate-500 dark:text-slate-400">
               {task.deadline
                 ? `${t.common.due} ${formatDate(task.deadline, preferences.dateFormat)}`
                 : t.project.noTaskDeadline}
             </span>
           </div>
-          <p className="text-sm leading-6 text-slate-700">
+          <p className="text-sm leading-6 text-slate-700 dark:text-slate-300">
             {task.description || t.common.noDescription}
           </p>
           <ResourceLinks resources={task.resources} />
           {task.estimated_minutes ? (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               {task.estimated_minutes} {t.common.min}
             </p>
           ) : null}
         </div>
 
         <div className="grid gap-2">
-          <h3 className="text-sm font-semibold text-slate-950">
+          <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-50">
             {t.project.subtasks}
           </h3>
           {task.subtasks.length === 0 ? (
@@ -916,23 +916,23 @@ function TaskDetailModal({
             task.subtasks.map((subtask, index) => (
               <div
                 key={subtask.id}
-                className="grid gap-1 rounded border border-slate-100 px-3 py-2"
+                className="grid gap-1 rounded border border-slate-100 dark:border-slate-800 px-3 py-2"
               >
                 <div className="flex items-start gap-3">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs font-semibold text-slate-500 dark:text-slate-400">
                     {index + 1}
                   </span>
                   <div>
-                    <p className="text-sm font-medium leading-6 text-slate-900">
+                    <p className="text-sm font-medium leading-6 text-slate-900 dark:text-slate-100">
                       {subtask.title}
                     </p>
                     {subtask.description ? (
-                      <p className="mt-1 text-sm leading-6 text-slate-600">
+                      <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
                         {subtask.description}
                       </p>
                     ) : null}
                     <ResourceLinks resources={subtask.resources} compact />
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {subtask.estimated_minutes ?? 30} {t.common.min}
                       {subtask.scheduled_date
                         ? ` - ${formatDate(subtask.scheduled_date, preferences.dateFormat)}`

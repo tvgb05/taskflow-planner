@@ -807,14 +807,14 @@ export default function ProjectDetailPage() {
               <Card data-guide="project-info">
                 <CardContent>
                   <div className="mb-4 flex items-center gap-3">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-cyan-50 text-cyan-700">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300">
                       <ProjectIcon icon={project.icon} />
                     </span>
                     <div>
-                      <h2 className="text-base font-semibold text-slate-950">
+                      <h2 className="text-base font-semibold text-slate-950 dark:text-slate-50">
                         {t.project.projectInformation}
                       </h2>
-                      <p className="mt-1 text-sm text-slate-500">
+                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                         {t.project.projectInformationHint}
                       </p>
                     </div>
@@ -887,7 +887,7 @@ export default function ProjectDetailPage() {
                         }))
                       }
                     />
-                    <p className="text-xs leading-5 text-slate-500">
+                    <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
                       {t.newProject.descriptionHint}
                     </p>
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -935,10 +935,10 @@ export default function ProjectDetailPage() {
                     >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <h2 className="text-base font-semibold text-slate-950">
+                        <h2 className="text-base font-semibold text-slate-950 dark:text-slate-50">
                           {t.project.aiBreakdown}
                         </h2>
-                        <p className="mt-1 text-sm leading-5 text-slate-500">
+                        <p className="mt-1 text-sm leading-5 text-slate-500 dark:text-slate-400">
                           {t.project.aiCallout}
                         </p>
                       </div>
@@ -999,7 +999,7 @@ export default function ProjectDetailPage() {
                     ) : null}
                     <div
                       data-guide="ai-work-limits"
-                      className="grid gap-3 border-t border-slate-200 pt-3"
+                      className="grid gap-3 border-t border-slate-200 dark:border-slate-700 pt-3"
                     >
                       <button
                         type="button"
@@ -1010,17 +1010,17 @@ export default function ProjectDetailPage() {
                         aria-expanded={taskSettingsExpanded}
                       >
                         <span>
-                          <span className="block text-sm font-semibold text-slate-800">
+                          <span className="block text-sm font-semibold text-slate-800 dark:text-slate-200">
                             {t.project.taskSettings}
                           </span>
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
                             {aiSettings.minTasks}-{aiSettings.maxTasks} {t.project.tasks}
                           </span>
                         </span>
                         {taskSettingsExpanded ? (
-                          <ChevronUp className="h-5 w-5 text-slate-500" />
+                          <ChevronUp className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                         ) : (
-                          <ChevronDown className="h-5 w-5 text-slate-500" />
+                          <ChevronDown className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                         )}
                       </button>
                       {taskSettingsExpanded ? (
@@ -1054,7 +1054,7 @@ export default function ProjectDetailPage() {
                         </div>
                       ) : null}
                     </div>
-                    <div className="grid gap-3 border-t border-slate-200 pt-3">
+                    <div className="grid gap-3 border-t border-slate-200 dark:border-slate-700 pt-3">
                       <button
                         type="button"
                         className="flex w-full items-center justify-between gap-3 text-left"
@@ -1064,27 +1064,27 @@ export default function ProjectDetailPage() {
                         aria-expanded={subtaskSettingsExpanded}
                       >
                         <span>
-                          <span className="block text-sm font-semibold text-slate-800">
+                          <span className="block text-sm font-semibold text-slate-800 dark:text-slate-200">
                             {t.project.subtaskSettings}
                           </span>
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
                             {aiSettings.createSubtasks
                               ? `${aiSettings.minSubtasks}-${aiSettings.maxSubtasks} ${t.project.subtasks}`
                               : t.project.subtasksDisabled}
                           </span>
                         </span>
                         {subtaskSettingsExpanded ? (
-                          <ChevronUp className="h-5 w-5 text-slate-500" />
+                          <ChevronUp className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                         ) : (
-                          <ChevronDown className="h-5 w-5 text-slate-500" />
+                          <ChevronDown className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                         )}
                       </button>
                       {subtaskSettingsExpanded ? (
                         <div className="grid gap-3">
-                          <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                          <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             <input
                               type="checkbox"
-                              className="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500"
+                              className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-cyan-700 dark:text-cyan-300 focus:ring-cyan-500"
                               checked={aiSettings.createSubtasks}
                               onChange={(event) =>
                                 setAiSettings((current) => ({
@@ -1125,10 +1125,10 @@ export default function ProjectDetailPage() {
                               }
                             />
                           </div>
-                          <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                          <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             <input
                               type="checkbox"
-                              className="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500"
+                              className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-cyan-700 dark:text-cyan-300 focus:ring-cyan-500"
                               checked={aiSettings.autoSchedule}
                               onChange={(event) =>
                                 setAiSettings((current) => ({
@@ -1161,14 +1161,14 @@ export default function ProjectDetailPage() {
                   <CardContent>
                     <div className="grid gap-4">
                       <div>
-                        <h2 className="text-base font-semibold text-slate-950">
+                        <h2 className="text-base font-semibold text-slate-950 dark:text-slate-50">
                           {t.project.newTask}
                         </h2>
-                        <p className="mt-1 text-sm leading-5 text-slate-500">
+                        <p className="mt-1 text-sm leading-5 text-slate-500 dark:text-slate-400">
                           {t.project.newTaskHint}
                         </p>
-                        <div className="mt-3 flex items-start gap-2 border-t border-slate-200 pt-3 text-sm leading-5 text-slate-600">
-                          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-cyan-700" />
+                        <div className="mt-3 flex items-start gap-2 border-t border-slate-200 dark:border-slate-700 pt-3 text-sm leading-5 text-slate-600 dark:text-slate-300">
+                          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-cyan-700 dark:text-cyan-300" />
                           <p>
                             {preferences.learnFromTaskPatterns
                               ? t.project.manualTaskLearningEnabled
@@ -1273,7 +1273,7 @@ export default function ProjectDetailPage() {
               </div>
 
               <div data-guide="schedule">
-                <h2 className="mb-3 text-base font-semibold text-slate-950">
+                <h2 className="mb-3 text-base font-semibold text-slate-950 dark:text-slate-50">
                   {t.project.scheduleView}
                 </h2>
                 <ScheduleList
@@ -1295,7 +1295,7 @@ export default function ProjectDetailPage() {
           }}
         >
           <form onSubmit={createTask} className="grid gap-4">
-            <p className="text-sm leading-6 text-slate-600">
+            <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
               {t.project.newTaskDialogHint}
             </p>
             <ErrorMessage message={message} errors={errors} />
@@ -1385,8 +1385,8 @@ export default function ProjectDetailPage() {
           onClose={() => setDeleteConfirmOpen(false)}
         >
           <div className="grid gap-5">
-            <div className="flex gap-3 rounded-md border border-rose-200 bg-rose-50 p-4 text-rose-950">
-              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-700" />
+            <div className="flex gap-3 rounded-md border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 p-4 text-rose-950 dark:text-rose-100">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-700 dark:text-rose-300" />
               <div className="grid gap-1 text-sm leading-6">
                 <p className="font-semibold">{t.project.deleteProjectWarning}</p>
                 <p>{t.project.deleteProjectDescription}</p>
@@ -1426,17 +1426,17 @@ export default function ProjectDetailPage() {
               {aiSuggestions.map((suggestion, suggestionIndex) => (
                 <div
                   key={`${suggestion.title}-${suggestion.estimated_minutes}`}
-                  className="grid gap-3 rounded-md border border-slate-200 bg-white px-3 py-3"
+                  className="grid gap-3 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-3"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-slate-950">
+                      <p className="text-sm font-semibold text-slate-950 dark:text-slate-50">
                         {suggestion.title}
                       </p>
-                      <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-cyan-700">
+                      <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-cyan-700 dark:text-cyan-300">
                         {suggestion.phase}
                       </p>
-                      <p className="mt-1 text-sm leading-6 text-slate-600">
+                      <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
                         {suggestion.description}
                       </p>
                       <div className="mt-2">
@@ -1461,10 +1461,10 @@ export default function ProjectDetailPage() {
                       <Badge tone="neutral">
                         {suggestion.subtasks.length} {t.project.subtasks}
                       </Badge>
-                      <span className="text-sm text-slate-500">
+                      <span className="text-sm text-slate-500 dark:text-slate-400">
                         {suggestion.estimated_minutes} {t.common.min}
                       </span>
-                      <span className="text-sm text-slate-500">
+                      <span className="text-sm text-slate-500 dark:text-slate-400">
                         {t.common.due} {formatDate(suggestion.deadline, preferences.dateFormat)}
                       </span>
                       <Button
@@ -1486,23 +1486,23 @@ export default function ProjectDetailPage() {
                     </div>
                   </div>
                   {suggestion.subtasks.length > 0 ? (
-                    <ol className="grid gap-2 border-t border-slate-100 pt-3">
+                    <ol className="grid gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
                       {suggestion.subtasks.map((subtask, index) => (
                         <li
                           key={`${suggestion.title}-${subtask.title}-${index}`}
-                          className="flex items-start gap-3 text-sm text-slate-700"
+                          className="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-300"
                         >
-                          <span className="grid h-6 w-6 shrink-0 place-items-center rounded border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500">
+                          <span className="grid h-6 w-6 shrink-0 place-items-center rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs font-semibold text-slate-500 dark:text-slate-400">
                             {index + 1}
                           </span>
                           <div className="min-w-0 flex-1 leading-6">
-                            <p className="font-medium text-slate-800">
+                            <p className="font-medium text-slate-800 dark:text-slate-200">
                               {subtask.title}
                             </p>
-                            <p className="mt-1 text-slate-600">
+                            <p className="mt-1 text-slate-600 dark:text-slate-300">
                               {subtask.description}
                             </p>
-                            <p className="mt-1 text-xs text-slate-500">
+                            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                               {subtask.estimated_minutes} {t.common.min}
                               {" - "}
                               {formatDate(
@@ -1568,7 +1568,7 @@ export default function ProjectDetailPage() {
           }}
         >
           <form onSubmit={repromptAiSuggestion} className="grid gap-4">
-            <p className="rounded-md border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm leading-6 text-cyan-950">
+            <p className="rounded-md border border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-950/40 px-3 py-2 text-sm leading-6 text-cyan-950 dark:text-cyan-100">
               {t.project.repromptMemoryNotice}
             </p>
             <Textarea

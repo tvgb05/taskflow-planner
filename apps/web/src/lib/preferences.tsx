@@ -13,11 +13,13 @@ import {
 
 export type AppLanguage = "en" | "vi";
 export type DateFormat = "dd/mm/yyyy" | "mm/dd/yyyy" | "yyyy-mm-dd";
+export type ThemePreference = "auto" | "light" | "dark";
 
 export type UserPreferences = {
   language: AppLanguage;
   languageManuallySelected: boolean;
   dateFormat: DateFormat;
+  theme: ThemePreference;
   learnFromTaskPatterns: boolean;
 };
 
@@ -33,6 +35,7 @@ export const defaultPreferences: UserPreferences = {
   language: "en",
   languageManuallySelected: false,
   dateFormat: "dd/mm/yyyy",
+  theme: "auto",
   learnFromTaskPatterns: true,
 };
 
@@ -42,6 +45,7 @@ const dateFormats = new Set<DateFormat>([
   "mm/dd/yyyy",
   "yyyy-mm-dd",
 ]);
+const themes = new Set<ThemePreference>(["auto", "light", "dark"]);
 
 const PreferencesContext = createContext<PreferencesContextValue | null>(null);
 
@@ -90,6 +94,10 @@ function readStoredPreferences(): UserPreferences {
         parsed.dateFormat && dateFormats.has(parsed.dateFormat)
           ? parsed.dateFormat
           : defaultPreferences.dateFormat,
+      theme:
+        parsed.theme && themes.has(parsed.theme)
+          ? parsed.theme
+          : defaultPreferences.theme,
       learnFromTaskPatterns:
         typeof parsed.learnFromTaskPatterns === "boolean"
           ? parsed.learnFromTaskPatterns
@@ -121,6 +129,29 @@ export function PreferencesProvider({
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
     }
   }, [hydrated, preferences]);
+
+  useEffect(() => {
+    const browserTheme = window.matchMedia("(prefers-color-scheme: dark)");
+
+    function applyTheme() {
+      const dark =
+        preferences.theme === "dark" ||
+        (preferences.theme === "auto" && browserTheme.matches);
+
+      document.documentElement.classList.toggle("dark", dark);
+      document.documentElement.style.colorScheme = dark ? "dark" : "light";
+    }
+
+    applyTheme();
+
+    if (preferences.theme !== "auto") {
+      return;
+    }
+
+    browserTheme.addEventListener("change", applyTheme);
+
+    return () => browserTheme.removeEventListener("change", applyTheme);
+  }, [preferences.theme]);
 
   const updatePreferences = useCallback(
     (updates: Partial<UserPreferences>) => {

@@ -1,6 +1,14 @@
 "use client";
 
-import { FolderKanban, LayoutDashboard, LogOut, Settings } from "lucide-react";
+import {
+  FolderKanban,
+  LayoutDashboard,
+  LogOut,
+  Monitor,
+  Moon,
+  Settings,
+  Sun,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
@@ -16,6 +24,7 @@ import { useAppText } from "@/lib/i18n";
 import {
   type AppLanguage,
   type DateFormat,
+  type ThemePreference,
   usePreferences,
 } from "@/lib/preferences";
 import { cn } from "@/lib/utils";
@@ -73,17 +82,17 @@ export function AppShell({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-950 dark:text-slate-50">
+      <header className="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <Link href="/dashboard" className="text-lg font-bold">
               TaskFlow Planner
             </Link>
-            <p className="text-sm text-slate-500">{user?.email}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{user?.email}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <nav className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 p-1">
+            <nav className="flex items-center gap-1 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = pathname === item.href;
@@ -97,8 +106,8 @@ export function AppShell({
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "inline-flex h-9 items-center gap-2 rounded px-3 text-sm font-semibold text-slate-600 transition hover:bg-white hover:text-slate-950",
-                      active && "bg-white text-slate-950 shadow-sm",
+                      "inline-flex h-9 items-center gap-2 rounded px-3 text-sm font-semibold text-slate-600 dark:text-slate-300 transition hover:bg-white dark:hover:bg-slate-800 hover:text-slate-950 dark:hover:text-slate-50",
+                      active && "bg-white dark:bg-slate-900 text-slate-950 dark:text-slate-50 shadow-sm",
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -124,11 +133,11 @@ export function AppShell({
       <main className="mx-auto w-full max-w-6xl px-4 py-8">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-normal text-slate-950">
+            <h1 className="text-2xl font-bold tracking-normal text-slate-950 dark:text-slate-50">
               {title}
             </h1>
             {description ? (
-              <p className="mt-1 max-w-2xl text-sm text-slate-500">
+              <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
                 {description}
               </p>
             ) : null}
@@ -283,24 +292,24 @@ function SettingsMenu() {
 
       {open ? (
         <div
-          className="absolute right-0 top-full z-40 mt-2 w-96 max-w-[calc(100vw-2rem)] rounded-md border border-slate-200 bg-white p-4 text-left shadow-xl"
+          className="absolute right-0 top-full z-40 mt-2 w-96 max-w-[calc(100vw-2rem)] rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 text-left shadow-xl"
           role="dialog"
           aria-label={t.appShell.settings}
         >
           <div className="grid gap-5">
             <form onSubmit={handleSaveProfile} className="grid gap-3">
               <div>
-                <h2 className="text-sm font-semibold text-slate-950">
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-slate-50">
                   {t.appShell.profile}
                 </h2>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {t.appShell.profileDescription}
                 </p>
               </div>
 
               <ErrorMessage message={profileError} />
               {profileMessage ? (
-                <p className="rounded border border-cyan-100 bg-cyan-50 px-3 py-2 text-sm text-cyan-800">
+                <p className="rounded border border-cyan-100 dark:border-cyan-900 bg-cyan-50 dark:bg-cyan-950/40 px-3 py-2 text-sm text-cyan-800 dark:text-cyan-200">
                   {profileMessage}
                 </p>
               ) : null}
@@ -326,8 +335,8 @@ function SettingsMenu() {
                   className={cn(
                     "rounded border px-2 py-1 text-xs font-semibold",
                     user?.email_verified
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "border-amber-200 bg-amber-50 text-amber-700",
+                      ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
+                      : "border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300",
                   )}
                 >
                   {user?.email_verified
@@ -374,12 +383,12 @@ function SettingsMenu() {
               </Button>
             </form>
 
-            <div className="grid gap-3 border-t border-slate-100 pt-4">
+            <div className="grid gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
               <div>
-                <h2 className="text-sm font-semibold text-slate-950">
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-slate-50">
                   {t.appShell.preferences}
                 </h2>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {t.appShell.savedOnBrowser}
                 </p>
               </div>
@@ -412,10 +421,49 @@ function SettingsMenu() {
                 <option value="yyyy-mm-dd">YYYY-MM-DD</option>
               </Select>
 
-              <label className="flex items-start gap-3 rounded-md border border-slate-200 px-3 py-3">
+              <fieldset className="grid gap-1.5">
+                <legend className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {t.appShell.theme}
+                </legend>
+                <div className="grid grid-cols-3 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-1">
+                  {(
+                    [
+                      ["auto", Monitor, t.appShell.themeAuto],
+                      ["light", Sun, t.appShell.themeLight],
+                      ["dark", Moon, t.appShell.themeDark],
+                    ] as const
+                  ).map(([theme, Icon, label]) => (
+                    <label
+                      key={theme}
+                      className={cn(
+                        "flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded px-2 text-xs font-semibold text-slate-600 dark:text-slate-300 transition hover:bg-white dark:hover:bg-slate-800 hover:text-slate-950 dark:hover:text-slate-50",
+                        preferences.theme === theme &&
+                          "bg-white dark:bg-slate-900 text-slate-950 dark:text-slate-50 shadow-sm",
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="theme"
+                        value={theme}
+                        className="sr-only"
+                        checked={preferences.theme === theme}
+                        onChange={() =>
+                          updatePreferences({
+                            theme: theme as ThemePreference,
+                          })
+                        }
+                      />
+                      <Icon className="h-4 w-4" />
+                      <span>{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              <label className="flex items-start gap-3 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-3">
                 <input
                   type="checkbox"
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500"
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-cyan-700 dark:text-cyan-300 focus:ring-cyan-500"
                   checked={preferences.learnFromTaskPatterns}
                   onChange={(event) =>
                     updatePreferences({
@@ -424,10 +472,10 @@ function SettingsMenu() {
                   }
                 />
                 <span>
-                  <span className="block text-sm font-medium text-slate-800">
+                  <span className="block text-sm font-medium text-slate-800 dark:text-slate-200">
                     {t.appShell.learnFromTaskPatterns}
                   </span>
-                  <span className="mt-1 block text-xs leading-5 text-slate-500">
+                  <span className="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-400">
                     {t.appShell.learnFromTaskPatternsHint}
                   </span>
                 </span>

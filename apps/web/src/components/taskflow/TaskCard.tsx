@@ -188,12 +188,12 @@ export function TaskCard({
           aria-label={expanded ? t.project.collapseTask : t.project.expandTask}
         >
           <div className="flex min-w-0 gap-3">
-            <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded border border-slate-200 bg-slate-50 text-slate-500">
+            <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400">
               <ExpandIcon className="h-4 w-4" />
             </span>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-base font-semibold text-slate-950">
+                <h3 className="text-base font-semibold text-slate-950 dark:text-slate-50">
                   {task.title}
                 </h3>
                 <Badge tone={statusTone[task.status]}>
@@ -208,11 +208,11 @@ export function TaskCard({
                 </Badge>
               </div>
               {task.description ? (
-                <p className="mt-1 line-clamp-2 text-sm text-slate-500">
+                <p className="mt-1 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">
                   {task.description}
                 </p>
               ) : null}
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                 {task.deadline
                   ? `${t.common.due} ${formatDate(task.deadline, preferences.dateFormat)}`
                   : t.project.noTaskDeadline}
@@ -225,13 +225,13 @@ export function TaskCard({
         </button>
 
         {expanded ? (
-          <div className="grid gap-4 border-t border-slate-100 pt-4">
+          <div className="grid gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
             <ResourceLinks resources={task.resources} />
             <form
               onSubmit={submitTask}
-              className="grid gap-3 rounded-md bg-slate-50 p-3"
+              className="grid gap-3 rounded-md bg-slate-50 dark:bg-slate-950 p-3"
             >
-              <h4 className="text-sm font-semibold text-slate-950">
+              <h4 className="text-sm font-semibold text-slate-950 dark:text-slate-50">
                 {t.project.editTask}
               </h4>
               <Input
@@ -334,11 +334,11 @@ export function TaskCard({
             </form>
 
             <div className="grid gap-2">
-              <h4 className="text-sm font-semibold text-slate-950">
+              <h4 className="text-sm font-semibold text-slate-950 dark:text-slate-50">
                 {t.project.taskDetails}
               </h4>
               {task.subtasks.length === 0 ? (
-                <p className="rounded border border-dashed border-slate-200 px-3 py-3 text-sm text-slate-500">
+                <p className="rounded border border-dashed border-slate-200 dark:border-slate-700 px-3 py-3 text-sm text-slate-500 dark:text-slate-400">
                   {t.project.noSubtasksYet}
                 </p>
               ) : (
@@ -357,7 +357,7 @@ export function TaskCard({
 
             <form
               onSubmit={submitSubtask}
-              className="grid gap-3 rounded-md bg-slate-50 p-3"
+              className="grid gap-3 rounded-md bg-slate-50 dark:bg-slate-950 p-3"
             >
               <Input
                 label={t.project.subtask}
@@ -438,7 +438,7 @@ function SubtaskEditor({
   return (
     <form
       onSubmit={submitSubtaskEdit}
-      className="grid gap-3 rounded border border-slate-100 px-3 py-3"
+      className="grid gap-3 rounded border border-slate-100 dark:border-slate-800 px-3 py-3"
     >
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_140px_150px_auto] lg:items-end">
         <Input
@@ -486,7 +486,7 @@ function SubtaskEditor({
             className={cn(
               iconOnlyButtonStyles,
               subtask.status === "done"
-                ? "h-10 w-10 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                ? "h-10 w-10 border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60"
                 : "h-10 w-10",
             )}
             disabled={busy}
