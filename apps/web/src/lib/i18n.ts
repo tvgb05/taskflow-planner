@@ -474,6 +474,19 @@ export const appText = {
       otpSendError: "Unable to send the verification code.",
       alreadyHaveAccount: "Already have an account?",
       apiError: "Unable to reach the API.",
+      continueWithGoogle: "Continue with Google",
+      signUpWithGoogle: "Sign up with Google",
+      orContinueWithEmail: "or continue with email",
+      googleCompleting: "Completing Google sign-in...",
+      googleNotConfigured: "Google sign-in is not configured yet.",
+      googleEmailUnverified:
+        "Google did not provide a verified email for this account.",
+      googleAccountConflict:
+        "This email is already linked to a different Google account.",
+      googleAuthFailed: "Google sign-in could not be completed. Please try again.",
+      googleSessionFailed:
+        "Google approved the sign-in, but the app session could not be created.",
+      backToLogin: "Back to login",
     },
   },
   vi: {
@@ -947,6 +960,19 @@ export const appText = {
       otpSendError: "Không gửi được mã xác thực.",
       alreadyHaveAccount: "Đã có tài khoản?",
       apiError: "Không kết nối được API.",
+      continueWithGoogle: "Tiếp tục với Google",
+      signUpWithGoogle: "Đăng ký bằng Google",
+      orContinueWithEmail: "hoặc tiếp tục bằng email",
+      googleCompleting: "Đang hoàn tất đăng nhập Google...",
+      googleNotConfigured: "Đăng nhập Google chưa được cấu hình.",
+      googleEmailUnverified:
+        "Google không cung cấp email đã xác thực cho tài khoản này.",
+      googleAccountConflict:
+        "Email này đã được liên kết với một tài khoản Google khác.",
+      googleAuthFailed: "Không thể hoàn tất đăng nhập Google. Vui lòng thử lại.",
+      googleSessionFailed:
+        "Google đã chấp nhận đăng nhập nhưng ứng dụng không thể tạo phiên sử dụng.",
+      backToLogin: "Quay lại đăng nhập",
     },
   },
 } as const;

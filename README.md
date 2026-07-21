@@ -102,6 +102,9 @@ NODEMAILER_ENDPOINT=http://localhost:3000/api/internal/send-otp
 NODEMAILER_INTERNAL_KEY=
 RECAPTCHA_SECRET_KEY=
 RECAPTCHA_REQUIRED=false
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:3000/backend/api/auth/google/callback
 ```
 
 Gemini is called only from Laravel. The AI breakdown prompt uses a concise planning profile inspired by the `mini` guidance pattern from `ciembor/agent-rules-books`.

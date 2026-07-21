@@ -44,6 +44,9 @@ NODEMAILER_ENDPOINT=http://localhost:3000/api/internal/send-otp
 NODEMAILER_INTERNAL_KEY=
 RECAPTCHA_SECRET_KEY=
 RECAPTCHA_REQUIRED=true
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:3000/backend/api/auth/google/callback
 ```
 
 Laravel sends OTP payloads to a private Next.js route protected by `NODEMAILER_INTERNAL_KEY`. The route uses Nodemailer and Gmail SMTP to deliver each code directly to the email entered during registration or profile verification.
@@ -61,6 +64,17 @@ API_PROXY_TARGET=https://api-taskflow-planner.up.railway.app
 The browser then requests `/backend/*` from the web domain and Next.js forwards
 the request to Laravel. Keep `SESSION_DOMAIN=null`; never use
 `.up.railway.app` as a cookie domain.
+
+For Google login, create a Web application OAuth client in Google Cloud and add
+the exact frontend proxy callback as an authorized redirect URI. Local
+development uses:
+
+```txt
+http://localhost:3000/backend/api/auth/google/callback
+```
+
+The Laravel callback creates or links only identities that include a verified
+Google email. Existing password login remains available after linking.
 
 Run migrations and serve the API:
 

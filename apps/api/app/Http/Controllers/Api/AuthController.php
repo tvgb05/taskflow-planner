@@ -73,7 +73,7 @@ class AuthController extends Controller
             ->whereRaw('LOWER(email) = ?', [$validated['email']])
             ->first();
 
-        if (! $user || ! Hash::check($validated['password'], $user->password)) {
+        if (! $user || ! $user->password || ! Hash::check($validated['password'], $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);

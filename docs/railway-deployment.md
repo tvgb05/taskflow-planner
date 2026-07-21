@@ -52,7 +52,7 @@ APP_ENV=production
 APP_KEY=<generated-app-key>
 APP_DEBUG=false
 APP_URL=https://${{RAILWAY_PUBLIC_DOMAIN}}
-FRONTEND_URL=https://${{web.RAILWAY_PUBLIC_DOMAIN}}
+FRONTEND_URL=https://taskflow-planner.site
 
 LOG_CHANNEL=stderr
 LOG_LEVEL=info
@@ -70,7 +70,7 @@ SESSION_ENCRYPT=false
 SESSION_DOMAIN=null
 SESSION_SECURE_COOKIE=true
 SESSION_SAME_SITE=lax
-SANCTUM_STATEFUL_DOMAINS=${{web.RAILWAY_PUBLIC_DOMAIN}}
+SANCTUM_STATEFUL_DOMAINS=taskflow-planner.site
 
 CACHE_STORE=database
 QUEUE_CONNECTION=database
@@ -80,12 +80,21 @@ GEMINI_MODEL=gemini-3.1-flash-lite
 GEMINI_TIMEOUT=90
 TASKFLOW_AI_PROFILE=portfolio_planner
 
-NODEMAILER_ENDPOINT=https://${{web.RAILWAY_PUBLIC_DOMAIN}}/api/internal/send-otp
+NODEMAILER_ENDPOINT=https://taskflow-planner.site/api/internal/send-otp
 NODEMAILER_INTERNAL_KEY=<shared-internal-key>
 
 RECAPTCHA_SECRET_KEY=
+GOOGLE_CLIENT_ID=<google-oauth-client-id>
+GOOGLE_CLIENT_SECRET=<google-oauth-client-secret>
+GOOGLE_REDIRECT_URI=https://taskflow-planner.site/backend/api/auth/google/callback
 RECAPTCHA_REQUIRED=false
 ```
+
+These examples assume `taskflow-planner.site` is attached to the web service.
+If the Railway-generated web domain is used instead, replace that host in
+`FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS`, `NODEMAILER_ENDPOINT`, and
+`GOOGLE_REDIRECT_URI` together. The Google Cloud authorized redirect URI must
+match `GOOGLE_REDIRECT_URI` exactly.
 
 Deploy the API and generate an HTTP public domain. In the domain settings, set
 the target port to `8080`, which is the port used by Railpack's Laravel server.
@@ -160,7 +169,8 @@ Check these in order:
 4. `https://<web-domain>/backend/sanctum/csrf-cookie` returns 204 or 200 and sets `XSRF-TOKEN`.
 5. Registration sends OTP to the entered email.
 6. Login loads the dashboard without CORS or HTTP 419 errors.
-7. Project creation, AI suggestions, and schedule saving reach Laravel.
+7. Google login returns through `/backend/api/auth/google/callback` and opens the dashboard.
+8. Project creation, AI suggestions, and schedule saving reach Laravel.
 
 If step 1 fails, inspect API Runtime Logs and database variables. If step 1
 passes but step 2 fails, inspect `API_PROXY_TARGET` and redeploy web. If login

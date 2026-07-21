@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
+import { GoogleAuthOption } from "@/components/taskflow/GoogleAuthOption";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Input } from "@/components/ui/Input";
@@ -64,6 +65,10 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <ErrorMessage message={message} errors={errors} />
+            <GoogleAuthOption
+              label={t.auth.continueWithGoogle}
+              dividerLabel={t.auth.orContinueWithEmail}
+            />
             <Input
               label={t.auth.email}
               name="email"

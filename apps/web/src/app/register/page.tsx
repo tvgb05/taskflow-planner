@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
+import { GoogleAuthOption } from "@/components/taskflow/GoogleAuthOption";
 import { RecaptchaWidget } from "@/components/taskflow/RecaptchaWidget";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
@@ -111,6 +112,10 @@ export default function RegisterPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <ErrorMessage message={message} errors={errors} />
+            <GoogleAuthOption
+              label={t.auth.signUpWithGoogle}
+              dividerLabel={t.auth.orContinueWithEmail}
+            />
             <Input
               label={t.auth.name}
               name="name"
