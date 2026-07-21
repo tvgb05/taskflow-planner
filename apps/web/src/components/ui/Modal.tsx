@@ -27,14 +27,14 @@ export function Modal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/40 px-4 py-6">
+    <div className="fixed inset-x-0 top-0 z-50 grid h-[var(--visual-viewport-height,100dvh)] items-end bg-slate-950/40 sm:place-items-center sm:px-4 sm:py-6">
       <div
-        className="w-full max-w-3xl rounded-md bg-white dark:bg-slate-900 shadow-xl"
+        className="flex max-h-[calc(var(--visual-viewport-height,100dvh)-0.5rem)] w-full max-w-3xl flex-col overflow-hidden rounded-t-md bg-white shadow-xl dark:bg-slate-900 sm:max-h-[calc(100dvh-3rem)] sm:rounded-md"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
       >
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
           <h2 id={titleId} className="text-lg font-semibold text-slate-950 dark:text-slate-50">
             {title}
           </h2>
@@ -54,7 +54,9 @@ export function Modal({
             </Button>
           ) : null}
         </div>
-        <div className="max-h-[70vh] overflow-y-auto p-5">{children}</div>
+        <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-5">
+          {children}
+        </div>
       </div>
     </div>
   );

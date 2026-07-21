@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { MobileViewportGuard } from "@/components/taskflow/MobileViewportGuard";
 import { AuthProvider } from "@/lib/auth";
 import { PreferencesProvider } from "@/lib/preferences";
 import "./globals.css";
@@ -50,6 +51,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitializationScript }} />
       </head>
       <body className="min-h-full bg-slate-50 dark:bg-slate-950">
+        <MobileViewportGuard />
         <AuthProvider>
           <PreferencesProvider>{children}</PreferencesProvider>
         </AuthProvider>

@@ -536,6 +536,73 @@ class PlanningWorkflowTest extends TestCase
         $this->assertStringContainsString('/models/gemini-test-model:generateContent', $recorded[1][0]->url());
     }
 
+    public function test_gemini_normalizes_safe_schema_drift_before_validation(): void
+    {
+        Carbon::setTestNow('2026-07-16 09:00:00');
+        config()->set('services.gemini.key', 'gemini-test-key');
+        config()->set('services.gemini.model', 'gemini-test-model');
+        config()->set('services.gemini.retry_attempts', 1);
+
+        $response = [
+            'tasks' => [[
+                'title' => 'Build the first working feature',
+                'description' => 'Implement the feature and verify its observable result.',
+                'resources' => [
+                    ['title' => 'Invalid link', 'url' => 'not-a-url'],
+                    ['title' => 'Laravel documentation', 'url' => 'www.laravel.com/docs'],
+                ],
+                'deadline' => '2099-12-31',
+                'estimated_minutes' => '999',
+                'priority' => 'Cao',
+                'subtasks' => [[
+                    'title' => 'Implement and verify the endpoint',
+                    'description' => 'Create the endpoint, call it once, and confirm the expected response.',
+                    'resources' => [['title' => 'Placeholder', 'url' => 'example.com']],
+                    'estimated_minutes' => '45',
+                    'scheduled_date' => '31/12/2099',
+                ]],
+            ]],
+        ];
+
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([
+                'candidates' => [[
+                    'content' => [
+                        'parts' => [
+                            ['text' => "```json\n"],
+                            ['text' => json_encode($response)."\n```"],
+                        ],
+                    ],
+                ]],
+            ]),
+        ]);
+
+        $result = app(GeminiTaskBreakdownService::class)->suggest([
+            'goal' => 'Ship a small Laravel feature.',
+            'deadline' => '2026-07-17',
+            'available_minutes_per_day' => 60,
+            'language' => 'en',
+            'plan_mode' => 'phased',
+            'create_subtasks' => true,
+            'min_tasks' => 1,
+            'max_tasks' => 1,
+            'min_subtasks' => 1,
+            'max_subtasks' => 1,
+        ]);
+
+        $task = $result['tasks'][0];
+        $this->assertSame('high', $task['priority']);
+        $this->assertSame(45, $task['estimated_minutes']);
+        $this->assertSame('2026-07-17', $task['deadline']);
+        $this->assertStringContainsString('Build the first working feature', $task['phase']);
+        $this->assertSame([
+            ['title' => 'Laravel documentation', 'url' => 'https://www.laravel.com/docs'],
+        ], $task['resources']);
+        $this->assertSame([], $task['subtasks'][0]['resources']);
+        $this->assertSame(45, $task['subtasks'][0]['estimated_minutes']);
+        $this->assertSame('2026-07-16', $task['subtasks'][0]['scheduled_date']);
+    }
+
     public function test_gemini_does_not_retry_when_the_model_quota_is_exhausted(): void
     {
         Carbon::setTestNow('2026-07-16 09:00:00');

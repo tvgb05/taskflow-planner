@@ -8,6 +8,7 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Throwable;
@@ -137,8 +138,10 @@ class GeminiTaskBreakdownService
             throw new RuntimeException('Gemini request failed. Please try again later.');
         }
 
-        $text = data_get($response->json(), 'candidates.0.content.parts.0.text');
-        $decoded = json_decode((string) $text, true);
+        $text = collect(data_get($response->json(), 'candidates.0.content.parts', []))
+            ->map(fn (mixed $part): string => is_array($part) ? (string) ($part['text'] ?? '') : '')
+            ->implode('');
+        $decoded = $this->decodeJsonResponse($text);
 
         if (! is_array($decoded)) {
             throw ValidationException::withMessages([
@@ -167,28 +170,13 @@ class GeminiTaskBreakdownService
         }
 
         if (is_array($tasks)) {
-            $tasks = array_map(function (mixed $task): mixed {
-                if (! is_array($task)) {
-                    return $task;
-                }
-
-                $task['resources'] = is_array($task['resources'] ?? null)
-                    ? array_values($task['resources'])
-                    : [];
-                $task['subtasks'] = array_map(function (mixed $subtask): mixed {
-                    if (! is_array($subtask)) {
-                        return $subtask;
-                    }
-
-                    $subtask['resources'] = is_array($subtask['resources'] ?? null)
-                        ? array_values($subtask['resources'])
-                        : [];
-
-                    return $subtask;
-                }, is_array($task['subtasks'] ?? null) ? $task['subtasks'] : []);
-
-                return $task;
-            }, $tasks);
+            $tasks = $this->normalizeGeneratedTasks(
+                $tasks,
+                $createSubtasks,
+                $maxTasks,
+                $maxSubtasks,
+                (int) $payload['available_minutes_per_day'],
+            );
         }
 
         $rules = [
@@ -282,6 +270,160 @@ class GeminiTaskBreakdownService
         }
 
         return $validated;
+    }
+
+    private function decodeJsonResponse(string $text): mixed
+    {
+        $decoded = json_decode(trim($text), true);
+
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $decoded;
+        }
+
+        $withoutFence = preg_replace(
+            '/^```(?:json)?\s*|\s*```$/i',
+            '',
+            trim($text),
+        );
+
+        return json_decode((string) $withoutFence, true);
+    }
+
+    /**
+     * Normalize harmless model drift before applying strict business validation.
+     *
+     * @param  array<int|string, mixed>  $tasks
+     * @return array<int, mixed>
+     */
+    private function normalizeGeneratedTasks(
+        array $tasks,
+        bool $createSubtasks,
+        int $maxTasks,
+        int $maxSubtasks,
+        int $availableMinutesPerDay,
+    ): array {
+        $schedulePlaceholder = CarbonImmutable::today()->toDateString();
+
+        return collect(array_slice(array_values($tasks), 0, $maxTasks))
+            ->map(function (mixed $task) use (
+                $createSubtasks,
+                $maxSubtasks,
+                $availableMinutesPerDay,
+                $schedulePlaceholder,
+            ): mixed {
+                if (! is_array($task)) {
+                    return $task;
+                }
+
+                $title = $this->normalizedText($task['title'] ?? null, 255);
+                $phase = $this->normalizedText($task['phase'] ?? null, 120);
+                $subtasks = $createSubtasks && is_array($task['subtasks'] ?? null)
+                    ? array_slice(array_values($task['subtasks']), 0, $maxSubtasks)
+                    : [];
+
+                $subtasks = array_map(function (mixed $subtask) use (
+                    $availableMinutesPerDay,
+                    $schedulePlaceholder,
+                ): mixed {
+                    if (! is_array($subtask)) {
+                        return $subtask;
+                    }
+
+                    return [
+                        ...$subtask,
+                        'title' => $this->normalizedText($subtask['title'] ?? null, 255),
+                        'description' => $this->normalizedText($subtask['description'] ?? null, 800),
+                        'resources' => $this->normalizedResources($subtask['resources'] ?? null),
+                        'estimated_minutes' => $this->normalizedMinutes(
+                            $subtask['estimated_minutes'] ?? null,
+                            $availableMinutesPerDay,
+                        ),
+                        // The scheduler redistributes every valid subtask after validation.
+                        'scheduled_date' => $schedulePlaceholder,
+                    ];
+                }, $subtasks);
+
+                $estimatedMinutes = $createSubtasks
+                    ? (int) collect($subtasks)
+                        ->filter(fn (mixed $subtask): bool => is_array($subtask))
+                        ->sum('estimated_minutes')
+                    : $this->normalizedMinutes($task['estimated_minutes'] ?? null, 10080);
+
+                return [
+                    ...$task,
+                    'title' => $title,
+                    'phase' => $phase !== '' ? $phase : $title,
+                    'description' => $this->normalizedText($task['description'] ?? null, 1200),
+                    'resources' => $this->normalizedResources($task['resources'] ?? null),
+                    // Task phases and deadlines are assigned deterministically after validation.
+                    'deadline' => $schedulePlaceholder,
+                    'estimated_minutes' => $estimatedMinutes,
+                    'priority' => $this->normalizedPriority($task['priority'] ?? null),
+                    'subtasks' => $subtasks,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    private function normalizedText(mixed $value, int $maxLength): string
+    {
+        if (! is_scalar($value)) {
+            return '';
+        }
+
+        return Str::limit(trim((string) $value), $maxLength, '');
+    }
+
+    /**
+     * @return array<int, array{title: string, url: string}>
+     */
+    private function normalizedResources(mixed $resources): array
+    {
+        if (! is_array($resources)) {
+            return [];
+        }
+
+        return collect($resources)
+            ->filter(fn (mixed $resource): bool => is_array($resource))
+            ->map(function (array $resource): ?array {
+                $url = $this->normalizedText($resource['url'] ?? null, 1000);
+                if (str_starts_with(Str::lower($url), 'www.')) {
+                    $url = Str::limit('https://'.$url, 1000, '');
+                }
+
+                $scheme = parse_url($url, PHP_URL_SCHEME);
+                if (! filter_var($url, FILTER_VALIDATE_URL) || ! in_array($scheme, ['http', 'https'], true)) {
+                    return null;
+                }
+
+                $title = $this->normalizedText($resource['title'] ?? null, 120);
+
+                return [
+                    'title' => $title !== '' ? $title : (string) parse_url($url, PHP_URL_HOST),
+                    'url' => $url,
+                ];
+            })
+            ->filter()
+            ->take(5)
+            ->values()
+            ->all();
+    }
+
+    private function normalizedMinutes(mixed $value, int $maximum): int
+    {
+        $minutes = is_numeric($value) ? (int) round((float) $value) : 30;
+
+        return max(5, min(max(5, $maximum), $minutes));
+    }
+
+    private function normalizedPriority(mixed $value): string
+    {
+        return match (Str::lower(trim((string) $value))) {
+            'high', 'urgent', 'cao' => 'high',
+            'low', 'minor', 'thap', 'thấp' => 'low',
+            default => 'medium',
+        };
     }
 
     /**
