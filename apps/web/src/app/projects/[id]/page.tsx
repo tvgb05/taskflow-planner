@@ -1159,7 +1159,7 @@ export default function ProjectDetailPage() {
 
                 <Card data-guide="new-task">
                   <CardContent>
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="grid gap-4">
                       <div>
                         <h2 className="text-base font-semibold text-slate-950">
                           {t.project.newTask}
@@ -1167,10 +1167,18 @@ export default function ProjectDetailPage() {
                         <p className="mt-1 text-sm leading-5 text-slate-500">
                           {t.project.newTaskHint}
                         </p>
+                        <div className="mt-3 flex items-start gap-2 border-t border-slate-200 pt-3 text-sm leading-5 text-slate-600">
+                          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-cyan-700" />
+                          <p>
+                            {preferences.learnFromTaskPatterns
+                              ? t.project.manualTaskLearningEnabled
+                              : t.project.manualTaskLearningDisabled}
+                          </p>
+                        </div>
                       </div>
                       <Button
                         type="button"
-                        className="shrink-0"
+                        className="w-full"
                         onClick={() => {
                           clearFeedback();
                           setTaskCreateOpen(true);

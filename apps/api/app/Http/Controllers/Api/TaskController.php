@@ -14,6 +14,29 @@ use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller
 {
+    public function standaloneIndex(Request $request): AnonymousResourceCollection
+    {
+        $tasks = $request->user()
+            ->tasks()
+            ->whereNull('project_id')
+            ->with('subtasks')
+            ->latest()
+            ->get();
+
+        return TaskResource::collection($tasks);
+    }
+
+    public function standaloneStore(TaskRequest $request): TaskResource
+    {
+        $task = $request->user()->tasks()->create([
+            ...$request->validated(),
+            'project_id' => null,
+            'source' => Task::SOURCE_MANUAL,
+        ]);
+
+        return new TaskResource($task->load('subtasks'));
+    }
+
     public function index(Request $request, Project $project): AnonymousResourceCollection
     {
         $this->authorize('view', $project);
@@ -39,7 +62,10 @@ class TaskController extends Controller
     {
         $this->authorize('update', $project);
 
-        $task = $project->tasks()->create($request->validated());
+        $task = $project->tasks()->create([
+            ...$request->validated(),
+            'user_id' => $project->user_id,
+        ]);
 
         return new TaskResource($task->load('subtasks'));
     }

@@ -120,6 +120,15 @@ export const appText = {
           ],
         },
         {
+          title: "Capture one-off work",
+          description:
+            "Use a one-off task for an independent action that does not need an AI plan, daily capacity, or a separate goal.",
+          details: [
+            "Set an optional deadline and effort estimate, then mark the task Done from the dashboard.",
+            "A manual one-off task can also teach the assistant your preferred writing format when task-format learning is enabled.",
+          ],
+        },
+        {
           title: "Read the dashboard",
           description:
             "These counters summarize workload, upcoming deadlines, active tasks, and today's plan.",
@@ -287,6 +296,22 @@ export const appText = {
       completeTask: "Mark task complete",
       reopenTask: "Reopen task",
       taskDetails: "Task details",
+      oneOffTasks: "One-off tasks",
+      oneOffTasksDescription:
+        "Capture work that needs to be done once without creating a goal.",
+      oneOffTask: "One-off task",
+      newOneOffTask: "New one-off task",
+      editOneOffTask: "Edit one-off task",
+      oneOffTaskFormHint:
+        "Use this for a single independent action. Add a clear result, realistic effort, and an optional deadline.",
+      createOneOffTask: "Create task",
+      noOneOffTasks: "No one-off tasks yet",
+      createOneOffTaskError: "Unable to create the one-off task.",
+      updateOneOffTaskError: "Unable to update the one-off task.",
+      deleteOneOffTaskError: "Unable to delete the one-off task.",
+      deleteOneOffTaskTitle: "Delete one-off task?",
+      deleteOneOffTaskConfirmation:
+        "This task will be permanently deleted. This action cannot be undone.",
     },
     projects: {
       title: "Goals",
@@ -358,6 +383,10 @@ export const appText = {
       scheduleAfterSaving: "Schedule after saving",
       newTask: "New task",
       newTaskHint: "Add a task manually when you already know the next result to complete.",
+      manualTaskLearningEnabled:
+        "AI learning is on. Future suggestions will follow the title structure, description detail, and subtask breakdown of tasks you create manually, without copying goal-specific content.",
+      manualTaskLearningDisabled:
+        "AI learning is off. Turn on \"Learn from my task format\" in Settings when you want future suggestions to follow how you write manual tasks.",
       newTaskDialogHint:
         "Describe a concrete result, then set its priority, effort, and deadline inside this goal window.",
       minutes: "Minutes",
@@ -564,6 +593,15 @@ export const appText = {
           ],
         },
         {
+          title: "Ghi nhanh công việc một lần",
+          description:
+            "Dùng nhiệm vụ một lần cho công việc độc lập, không cần trợ lý lập kế hoạch, quỹ thời gian mỗi ngày hay một mục tiêu riêng.",
+          details: [
+            "Bạn có thể đặt hạn chót, thời lượng dự kiến rồi đánh dấu Xong ngay trên trang tổng quan.",
+            "Nhiệm vụ một lần do bạn tự viết cũng có thể giúp trợ lý học cách trình bày khi tùy chọn học đang bật.",
+          ],
+        },
+        {
           title: "Đọc trang tổng quan",
           description:
             "Các chỉ số này tóm tắt khối lượng công việc, hạn chót gần tới, nhiệm vụ đang làm và kế hoạch hôm nay.",
@@ -731,6 +769,22 @@ export const appText = {
       completeTask: "Đánh dấu nhiệm vụ hoàn tất",
       reopenTask: "Mở lại nhiệm vụ",
       taskDetails: "Chi tiết nhiệm vụ",
+      oneOffTasks: "Nhiệm vụ một lần",
+      oneOffTasksDescription:
+        "Ghi lại công việc chỉ cần làm một lần mà không phải tạo mục tiêu.",
+      oneOffTask: "Nhiệm vụ một lần",
+      newOneOffTask: "Nhiệm vụ một lần mới",
+      editOneOffTask: "Chỉnh sửa nhiệm vụ một lần",
+      oneOffTaskFormHint:
+        "Dùng cho một công việc độc lập. Hãy ghi rõ kết quả cần đạt, thời lượng thực tế và hạn chót nếu có.",
+      createOneOffTask: "Tạo nhiệm vụ",
+      noOneOffTasks: "Chưa có nhiệm vụ một lần",
+      createOneOffTaskError: "Không tạo được nhiệm vụ một lần.",
+      updateOneOffTaskError: "Không cập nhật được nhiệm vụ một lần.",
+      deleteOneOffTaskError: "Không xóa được nhiệm vụ một lần.",
+      deleteOneOffTaskTitle: "Xóa nhiệm vụ một lần?",
+      deleteOneOffTaskConfirmation:
+        "Nhiệm vụ này sẽ bị xóa vĩnh viễn và không thể khôi phục.",
     },
     projects: {
       title: "Mục tiêu",
@@ -802,6 +856,10 @@ export const appText = {
       scheduleAfterSaving: "Tạo lịch sau khi lưu",
       newTask: "Nhiệm vụ mới",
       newTaskHint: "Tự thêm nhiệm vụ khi bạn đã biết kết quả tiếp theo cần hoàn thành.",
+      manualTaskLearningEnabled:
+        "AI đang học theo cách bạn viết. Các gợi ý sau sẽ tham khảo cấu trúc tiêu đề, mức độ chi tiết của mô tả và cách chia bước thực hiện trong nhiệm vụ bạn tự tạo, nhưng không sao chép nội dung riêng của mục tiêu.",
+      manualTaskLearningDisabled:
+        "AI chưa học theo nhiệm vụ tự tạo. Hãy bật \"Học theo cách tôi viết nhiệm vụ\" trong Cài đặt để các gợi ý sau làm theo cách trình bày của bạn.",
       newTaskDialogHint:
         "Mô tả một kết quả cụ thể, sau đó đặt độ ưu tiên, thời lượng và hạn chót trong khoảng thời gian của mục tiêu.",
       minutes: "Số phút",

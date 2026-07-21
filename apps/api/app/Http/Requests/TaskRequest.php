@@ -19,8 +19,13 @@ class TaskRequest extends FormRequest
      */
     public function rules(): array
     {
-        $project = $this->route('project') ?? $this->route('task')?->project;
+        $task = $this->route('task');
+        $project = $this->route('project') ?? $task?->project;
         $projectDeadline = $project?->deadline?->toDateString();
+        $submittedDeadline = $this->input('deadline');
+        $keepsExistingDeadline = $task !== null
+            && is_string($submittedDeadline)
+            && $task->deadline?->toDateString() === $submittedDeadline;
 
         return [
             'title' => ['required', 'string', 'max:255'],
@@ -31,7 +36,7 @@ class TaskRequest extends FormRequest
             'deadline' => [
                 'nullable',
                 'date',
-                'after_or_equal:today',
+                ...($keepsExistingDeadline ? [] : ['after_or_equal:today']),
                 ...($projectDeadline ? ["before_or_equal:{$projectDeadline}"] : []),
             ],
             'estimated_minutes' => ['nullable', 'integer', 'min:5', 'max:10080'],

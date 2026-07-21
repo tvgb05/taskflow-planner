@@ -155,7 +155,10 @@ class AiBreakdownController extends Controller
     {
         return Task::query()
             ->where('source', Task::SOURCE_MANUAL)
-            ->whereHas('project', fn ($query) => $query->where('user_id', $userId))
+            ->where(function ($query) use ($userId): void {
+                $query->where('user_id', $userId)
+                    ->orWhereHas('project', fn ($projectQuery) => $projectQuery->where('user_id', $userId));
+            })
             ->with('subtasks')
             ->latest()
             ->limit(5)

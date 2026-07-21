@@ -39,7 +39,8 @@ export type SubtaskStatus = "todo" | "done";
 
 export type Task = {
   id: number;
-  project_id: number;
+  project_id: number | null;
+  standalone: boolean;
   title: string;
   description: string | null;
   resources: ResourceLink[];

@@ -28,6 +28,7 @@ class Task extends Model
     public const SOURCE_AI = 'ai';
 
     protected $fillable = [
+        'user_id',
         'project_id',
         'title',
         'description',
@@ -52,6 +53,11 @@ class Task extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function subtasks(): HasMany

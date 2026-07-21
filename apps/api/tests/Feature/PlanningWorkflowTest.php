@@ -330,6 +330,12 @@ class PlanningWorkflowTest extends TestCase
             'title' => 'Manual pattern: outcome, method, and acceptance check',
             'source' => Task::SOURCE_MANUAL,
         ]);
+        $standaloneTask = Task::factory()->create([
+            'user_id' => $user->id,
+            'project_id' => null,
+            'title' => 'One-off pattern: concise independent result',
+            'source' => Task::SOURCE_MANUAL,
+        ]);
         Subtask::factory()->for($manualTask)->create([
             'title' => 'Manual verification step',
             'description' => 'Run a concrete check and record its result.',
@@ -392,9 +398,11 @@ class PlanningWorkflowTest extends TestCase
 
         $this->assertStringContainsString('Project type: long_term.', $learningPrompt);
         $this->assertStringContainsString($manualTask->title, $learningPrompt);
+        $this->assertStringContainsString($standaloneTask->title, $learningPrompt);
         $this->assertStringContainsString('Manual verification step', $learningPrompt);
         $this->assertStringNotContainsString('AI-generated task that must not become a style example', $learningPrompt);
         $this->assertStringNotContainsString($manualTask->title, $disabledPrompt);
+        $this->assertStringNotContainsString($standaloneTask->title, $disabledPrompt);
         $this->assertStringContainsString('task-format learning is disabled', $disabledPrompt);
     }
 

@@ -16,6 +16,7 @@ export type GuideStep = {
 
 const dashboardGuideTargets = [
   "[data-guide='new-project']",
+  "[data-guide='one-off-tasks']",
   "[data-guide='dashboard-metrics']",
   "[data-guide='dashboard-work']",
 ];
